@@ -2333,6 +2333,7 @@
 		.image img {
 			border-radius: 4px;
 			display: block;
+			/*padding: 75%;*/　/*ここに入れると透明じゃないけど，幅はすべてのタイルで固定される．*/
 		}
 
 		.image.left, .image.right {
@@ -2590,11 +2591,11 @@
 		-webkit-flex-wrap: wrap;
 		-ms-flex-wrap: wrap;
 		flex-wrap: wrap;
-		postiion: relative;
+		position: relative;
 		margin: -2.5em 0 0 -2.5em;
 	}
 
-		.tiles article {
+		.tiles article { /*これがデフォルト値なのか．*/
 			-moz-transition: -moz-transform 0.5s ease, opacity 0.5s ease;
 			-webkit-transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
 			-ms-transition: -ms-transform 0.5s ease, opacity 0.5s ease;
@@ -2612,16 +2613,18 @@
 				position: relative;
 				display: block;
 				width: 100%;
+				/*height: width*0.75px;*/
+				/*height: 200px; ここで絶対値指定するとかなりいい感じなんだけどなぁ．ここを4:3のように指定できたらうれしいんだけど．．．*/
 				border-radius: 4px;
 				overflow: hidden;
 			}
 
-				.tiles article > .image img {
+				.tiles article > .image img { /*画像部分*/
 					display: block;
 					width: 100%;
 				}
 
-				.tiles article > .image:before {
+				.tiles article > .image:before { /*薄かけの部分？*/
 					-moz-pointer-events: none;
 					-webkit-pointer-events: none;
 					-ms-pointer-events: none;
@@ -2642,7 +2645,7 @@
 					opacity: 0.8;
 				}
 
-				.tiles article > .image:after {
+				.tiles article > .image:after { /*文字部分？*/
 					-moz-pointer-events: none;
 					-webkit-pointer-events: none;
 					-ms-pointer-events: none;
@@ -2791,6 +2794,17 @@
 			opacity: 1;
 		}
 
+
+		/*adjust size corresponding to the screen*/
+
+		@media screen{
+				/*added by TadaMatz*/
+				.tiles article > .image img{
+					/*height: calc(33.33333% * 3/4);*/
+					height: 280px;
+				}
+		}
+
 		@media screen and (max-width: 1280px) {
 
 			.tiles {
@@ -2800,6 +2814,12 @@
 				.tiles article {
 					width: calc(33.33333% - 1.25em);
 					margin: 1.25em 0 0 1.25em;
+				}
+
+				/*added by TadaMatz*/
+				.tiles article > .image img{
+					/*height: calc(33.33333% * 3/4);*/
+					height: 240px;
 				}
 
 		}
@@ -2813,6 +2833,12 @@
 				.tiles article {
 					width: calc(50% - 2.5em);
 					margin: 2.5em 0 0 2.5em;
+				}
+
+				/*added by TadaMatz*/
+				.tiles article > .image img{
+					/*height: calc(50% * 3/4);*/
+					height: 280px;
 				}
 
 		}
@@ -2835,6 +2861,12 @@
 						transform: scale(1.0);
 					}
 
+				/*added by TadaMatz*/
+				.tiles article > .image img{
+					/*height: calc(50% * 3/4);*/
+					height: 240px;
+				}					
+
 		}
 
 		@media screen and (max-width: 480px) {
@@ -2848,7 +2880,12 @@
 					margin: 1.25em 0 0 0;
 				}
 
-		}
+				/*added by TadaMatz*/
+				.tiles article > .image img{
+					/*height: calc(100% * 3/4);*/
+					height: 280px;
+				}
+ 		}
 
 /* Header */
 
