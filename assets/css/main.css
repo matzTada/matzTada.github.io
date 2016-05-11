@@ -2732,6 +2732,11 @@
 						margin-bottom: 0;
 					}
 
+			/*added by TadaMatz*/
+			.tiles article.style0 > .image:before {
+				background-color: #c0c0c0;
+			}
+
 			.tiles article.style1 > .image:before {
 				background-color: #f2849e;
 			}
