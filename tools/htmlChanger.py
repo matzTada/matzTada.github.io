@@ -7,8 +7,8 @@ soup = BeautifulSoup(html, "html.parser")
 
 #print(soup.body.header.div.a.find_all("span"))
 
-print(soup.find("article", attrs={"class" : "style3"}).prettify())
+print(soup.find("article", attrs={"class" : "style4"}).prettify())
 
-soup.find("article", attrs={"class" : "style3"}).find("h2").replace_with("hogehogehoge")
+soup.find("article", attrs={"class" : "style4"}).find("h2").replace_with("hogehogehoge")
 
-print(soup.find("article", attrs={"class" : "style3"}).prettify())
+print(soup.find("article", attrs={"class" : "style4"}).prettify())
