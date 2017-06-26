@@ -7,8 +7,11 @@ soup = BeautifulSoup(html, "html.parser")
 
 #print(soup.body.header.div.a.find_all("span"))
 
+print("=== before ===")
 print(soup.find("article", attrs={"class" : "style4"}).prettify())
 
-soup.find("article", attrs={"class" : "style4"}).find("h2").replace_with("hogehogehoge")
+print("=== change ===")
+soup.find("article", attrs={"class" : "style4"}).find("h2").string.replace_with("hogehogehoge")
 
-print(soup.find("article", attrs={"class" : "style4"}).prettify())
+print("=== after ===")
+print(soup.find("article").prettify())

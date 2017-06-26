@@ -16,3 +16,5 @@
 * <http://kondou.com/BS4/>
 	* NavigableStringっていうのを使えば，tagに挟まれた文字を置換できる
 	* [tag].string.replace_with("[string]")で文字を変えられる
+	* ```["attribute"]```で属性
+	* ```.string```でタグに挟まれた中身の文字
