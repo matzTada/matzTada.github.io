@@ -7,7 +7,7 @@ colorArray = []
 colorArrayItr = 0
 
 #initialize colorArray
-colorArray = ["style1", "style2", "style3", "style4", "style5", "style6"] #values in colorArray must suit style in css
+colorArray = ["style1", "style2", "style3", "style4", "style5", "style6", "style7"] #values in colorArray must suit style in css
 #colorArray = ["style1", "style2"] #values in colorArray must suit style in css
 
 #read from file

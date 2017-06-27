@@ -2734,32 +2734,37 @@
 
 			/*added by TadaMatz*/
 			.tiles article.style0 > .image:before {
-				background-color: #c0c0c0;
+				background-color: #c0c0c0; /*Gray*/
 			}
 
 			.tiles article.style1 > .image:before {
-				background-color: #f2849e;
+				background-color: #f2849e; /*light red*/
 			}
 
 			.tiles article.style2 > .image:before {
-				background-color: #7ecaf6;
+				background-color: #FBE1A6; /*light orange*/
 			}
 
 			.tiles article.style3 > .image:before {
-				background-color: #7bd0c1;
+				background-color: #7bd0c1; /*light green*/
 			}
 
 			.tiles article.style4 > .image:before {
-				background-color: #c75b9b;
+				background-color: #7ecaf6; /*light sky blue*/
 			}
 
 			.tiles article.style5 > .image:before {
-				background-color: #ae85ca;
+				background-color: #8499e7; /*light blue*/
 			}
 
 			.tiles article.style6 > .image:before {
-				background-color: #8499e7;
+				background-color: #ae85ca; /*light purple*/
 			}
+
+			.tiles article.style7 > .image:before {
+				background-color: #c75b9b; /*light red purple*/
+			}
+
 
 			body:not(.is-touch) .tiles article:hover > .image {
 				-moz-transform: scale(1.1);
