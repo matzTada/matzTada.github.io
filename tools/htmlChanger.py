@@ -1,8 +1,8 @@
 #htmlChanger.py for index.html of matztada.github.io
 
 #variables
-inFileName = "../index.html"
-outFileName = "../index_mod.html"
+inFileName = "../index_seed.html"
+outFileName = "../index.html"
 colorArray = []
 colorArrayItr = 0
 
