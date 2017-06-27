@@ -20,8 +20,14 @@ from bs4 import BeautifulSoup
 soup = BeautifulSoup(html, "html.parser")
 
 #changing each article based on color array
-for tmpArticle in soup.find_all("article"): 
-    print(tmpArticle.find("h2").string + " : " + tmpArticle["class"][0].encode())
+for tmpArticle in soup.find_all("article"):
+    print "--- an article ---"
+    print "title   : " + tmpArticle.find("h2").string.encode()
+    print "style   : " + tmpArticle["class"][0].encode()
+    print "image   : " + tmpArticle.find("span", attrs={"class" : "image"}).find("img")["src"].encode()
+    print "link    : " + tmpArticle.find("a")["href"].encode()
+    print "content : " + tmpArticle.find("div", attrs={"class" : "content"}).find("p").string.encode()    
+
     if not tmpArticle["class"][0] == "style0":
         tmpArticle["class"][0] = colorArray[colorArrayItr]
         colorArrayItr += 1
