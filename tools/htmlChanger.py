@@ -15,3 +15,7 @@ soup.find("article", attrs={"class" : "style4"}).find("h2").string.replace_with(
 
 print("=== after ===")
 print(soup.find("article").prettify())
+
+outputFile = open("new.html", "w")
+outputFile.write(soup.prettify(formatter="html"))
+outputFile.close()
