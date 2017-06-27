@@ -8,10 +8,14 @@
 
 ## To Do
 
-* tyle color changer
 * content handler
+	* 
 
-## Content Handler
+## Type color changer
+can change ```style``` attribute of ```article``` tag based on the pre-defined sequence
+
+## tips
+### html handling with Python
 
 * ```pip install beautifulsoup4```
 * <http://qiita.com/itkr/items/513318a9b5b92bd56185>
