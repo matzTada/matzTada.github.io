@@ -1,7 +1,14 @@
-#htmlChanger.py
+#htmlChanger.py for index.html of matztada.github.io
+
 #variables
 inFileName = "../index.html"
 outFileName = "../index_mod.html"
+colorArray = []
+colorArrayItr = 0
+
+#initialize colorArray
+colorArray = ["style1", "style2", "style3", "style4", "style5", "style6"] #values in colorArray must suit style in css
+#colorArray = ["style1", "style2"] #values in colorArray must suit style in css
 
 #read from file
 import codecs
@@ -12,9 +19,14 @@ html = f.read()
 from bs4 import BeautifulSoup
 soup = BeautifulSoup(html, "html.parser")
 
+#changing each article based on color array
 for tmpArticle in soup.find_all("article"): 
     print(tmpArticle.find("h2").string + " : " + tmpArticle["class"][0].encode())
-    tmpArticle["class"][0] = "style0"
+    if not tmpArticle["class"][0] == "style0":
+        tmpArticle["class"][0] = colorArray[colorArrayItr]
+        colorArrayItr += 1
+        if(colorArrayItr >= len(colorArray)):
+            colorArrayItr = 0
     
 #write to files
 outputFile = open(outFileName, "w")
