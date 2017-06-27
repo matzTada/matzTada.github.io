@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 
-def function(): 
+def writeArticle(title, img_src, img_alt, link, sentence): 
     soup = BeautifulSoup("<addtag></addtag>", "html.parser")
 
     soup.addtag.append(soup.new_tag("article"))
@@ -13,7 +13,7 @@ def function():
 
     #print "=== appended tags ==="
     #print soup.prettify()
-
+    
     soup.addtag.article["class"] = "style1"
     soup.addtag.article.span["class"] = "image"
     soup.addtag.article.span.img["alt"] = ""
@@ -25,24 +25,28 @@ def function():
     #print soup.prettify()
 
     tmpArticle = soup.addtag.article
-    tmpArticle.find("h2").string = "TITLE"
-    tmpArticle.find("span", attrs={"class" : "image"}).find("img")["src"] = "IMAGE_SRC"
-    tmpArticle.find("span", attrs={"class" : "image"}).find("img")["alt"] = "IMAGE_ALT"
-    tmpArticle.find("a")["href"] = "LINK"
-    tmpArticle.find("div", attrs={"class" : "content"}).find("p").string = "SENTENCE"
-
+    tmpArticle.find("h2").string = title
+    tmpArticle.find("span", attrs={"class" : "image"}).find("img")["src"] = img_src
+    tmpArticle.find("span", attrs={"class" : "image"}).find("img")["alt"] = img_alt
+    tmpArticle.find("a")["href"] = link
+    tmpArticle.find("div", attrs={"class" : "content"}).find("p").string = sentence
 
     #print "=== result ==="
     #print soup.addtag.article.prettify()
 
-    return soup.addtag.article
+    return soup.addtag.article #return PageElement
 
 
 if __name__ == "__main__":
-    returnStr = function()
-    print returnStr.prettify()
+    title = "TITLE"
+    img_src = "IMAGE_SRC"
+    img_alt = "IMAGE_ALT"
+    link = "LINK"
+    sentence = "SENTENCE"
+    returnPageElement = writeArticle(title, img_src, img_alt, link, sentence)
+    print returnPageElement.prettify()
 
     print "=== print test ==="
     soup = BeautifulSoup("<hoge></hoge>", "html.parser")
-    soup.append(returnStr)
+    soup.append(returnPageElement)
     print soup.prettify()
