@@ -21,13 +21,13 @@ from bs4 import BeautifulSoup
 soup = BeautifulSoup(html, "html.parser")
 #append or modify new article. commet this section usually
 from tagMaker import writeArticle, modifyArticle
-editMode = "clear" # ---clear BE SUPER CAREFULL!!
-title = "TITLE"
-img_src = ""
+editMode = "modify" # ---clear BE SUPER CAREFULL!!
+title = "Ultrasonic Ruler"
+img_src = "" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg"
 img_alt = ""
-link = ""
-sentence = "In preparation"
-style = ""
+link = "" #github.io page "http://matztada.github.io/"
+sentence = ""
+style = "style" #style0 for gray window
 if editMode == "append":
     returnPageElement = writeArticle(title, img_src, img_alt, link, sentence, style)
     print returnPageElement.prettify()
