@@ -43,12 +43,18 @@ def writeArticle(title, img_src, img_alt, link, sentence, style):
 
 def modifyArticle(article, title, img_src, img_alt, link, sentence, style):
     tmpArticle = article
-    tmpArticle.find("h2").string = title
-    tmpArticle.find("span", attrs={"class" : "image"}).find("img")["src"] = img_src
-    tmpArticle.find("span", attrs={"class" : "image"}).find("img")["alt"] = img_alt
-    tmpArticle.find("a")["href"] = link
-    tmpArticle.find("div", attrs={"class" : "content"}).find("p").string = sentence
-    tmpArticle["class"] = style
+    if len(title) > 0:
+        tmpArticle.find("h2").string = title
+    if len(img_src) > 0:
+        tmpArticle.find("span", attrs={"class" : "image"}).find("img")["src"] = img_src
+    if len(img_alt) > 0:
+        tmpArticle.find("span", attrs={"class" : "image"}).find("img")["alt"] = img_alt
+    if len(link) > 0:
+        tmpArticle.find("a")["href"] = link
+    if len(sentence) > 0:
+        tmpArticle.find("div", attrs={"class" : "content"}).find("p").string = sentence
+    if len(style) > 0:
+        tmpArticle["class"] = style
 
 if __name__ == "__main__":
     title = "TITLE"

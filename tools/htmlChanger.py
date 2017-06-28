@@ -21,27 +21,30 @@ from bs4 import BeautifulSoup
 soup = BeautifulSoup(html, "html.parser")
 #append or modify new article. commet this section usually
 from tagMaker import writeArticle, modifyArticle
+editMode = "clear" # ---clear BE SUPER CAREFULL!!
 title = "TITLE"
-img_src = "IMAGE_SRC"
-img_alt = "IMAGE_ALT"
-link = "LINK"
-sentence = "SENTENCE"
-style = "STYLE"
-#--- append
-# returnPageElement = writeArticle(title, img_src, img_alt, link, sentence, style)
-# print returnPageElement.prettify()
-# soup.find("section", attrs={"class" : "tiles"}).append(returnPageElement)
-#--- append
-#---modify
-for tmpArticle in soup.find_all("article"):
-    if tmpArticle.find("h2").string.encode().strip() == title:
-        modifyArticle(tmpArticle, title, img_src, img_alt, link, sentence, style)
-#---modify
-#---clear BE SUPER CAREFULL!!
-for tmpArticle in soup.find_all("article"):
-    if tmpArticle.find("h2").string.encode().strip() == title:
-        tmpArticle.replace_with("")
-#---clear BE SUPER CAREFULL!!
+img_src = ""
+img_alt = ""
+link = ""
+sentence = "In preparation"
+style = ""
+if editMode == "append":
+    returnPageElement = writeArticle(title, img_src, img_alt, link, sentence, style)
+    print returnPageElement.prettify()
+    soup.find("section", attrs={"class" : "tiles"}).append(returnPageElement)
+elif editMode == "modify":
+    for tmpArticle in soup.find_all("article"):
+        if tmpArticle.find("h2").string.encode().strip() == title:
+            modifyArticle(tmpArticle, title, img_src, img_alt, link, sentence, style)
+            print "find the article!!"
+            print tmpArticle.prettify()
+            break
+    else:
+        print "cannot find the article."
+elif editMode == "clear":
+    for tmpArticle in soup.find_all("article"):
+        if tmpArticle.find("h2").string.encode().strip() == title:
+            tmpArticle.replace_with("")
 inputFile = open(inFileName, "w")
 inputFile.write(soup.prettify(formatter="html"))
 inputFile.close()
@@ -63,11 +66,13 @@ for tmpArticle in soup.find_all("article"):
     # print "link    : " + tmpArticle.find("a")["href"].encode()
     # print "content : " + tmpArticle.find("div", attrs={"class" : "content"}).find("p").string.encode()    
 
-    if not tmpArticle["class"][0] == "style0":
+    if len(tmpArticle["class"][0]) > 0 and tmpArticle["class"][0] != "style0":
         tmpArticle["class"][0] = colorArray[colorArrayItr]
         colorArrayItr += 1
         if(colorArrayItr >= len(colorArray)):
             colorArrayItr = 0
+    else:
+        tmpArticle["class"][0] = "style0"
     
 #write to files
 outputFile = open(outFileName, "w")
