@@ -37,6 +37,11 @@ for tmpArticle in soup.find_all("article"):
     if tmpArticle.find("h2").string.encode().strip() == title:
         modifyArticle(tmpArticle, title, img_src, img_alt, link, sentence, style)
 #---modify
+#---clear BE SUPER CAREFULL!!
+for tmpArticle in soup.find_all("article"):
+    if tmpArticle.find("h2").string.encode().strip() == title:
+        tmpArticle.replace_with("")
+#---clear BE SUPER CAREFULL!!
 inputFile = open(inFileName, "w")
 inputFile.write(soup.prettify(formatter="html"))
 inputFile.close()
