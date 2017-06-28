@@ -22,8 +22,8 @@ soup = BeautifulSoup(html, "html.parser")
 #append or modify new article. commet this section usually
 from tagMaker import writeArticle, modifyArticle
 editMode = "modify" # ---clear BE SUPER CAREFULL!!
-title = "Ultrasonic Ruler"
-img_src = "" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg"
+title = "RGB Simulator"
+img_src = "https://raw.githubusercontent.com/matzTada/RGBSimulator/master/RGBSimulator/data/map_drew.png" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
 img_alt = ""
 link = "" #github.io page "http://matztada.github.io/"
 sentence = ""
