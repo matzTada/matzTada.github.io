@@ -6,13 +6,11 @@
 	<img src="https://matztada.github.io/images/screenshot.png" alt="" width=50%>
 </a>  
 
-## To Do
+## Content handler
 
-* content handler
-	* 
+* can change ```style``` attribute of ```article``` tag based on the pre-defined sequence
+* can "append", "modify", "clear" articles
 
-## Type color changer
-can change ```style``` attribute of ```article``` tag based on the pre-defined sequence
 
 ## tips
 ### html handling with Python

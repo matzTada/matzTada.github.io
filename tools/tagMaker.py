@@ -1,6 +1,9 @@
+
+# -*- coding: utf-8 -*-
+
 from bs4 import BeautifulSoup
 
-def writeArticle(title, img_src, img_alt, link, sentence): 
+def writeArticle(title, img_src, img_alt, link, sentence, style): 
     soup = BeautifulSoup("<addtag></addtag>", "html.parser")
 
     soup.addtag.append(soup.new_tag("article"))
@@ -30,12 +33,22 @@ def writeArticle(title, img_src, img_alt, link, sentence):
     tmpArticle.find("span", attrs={"class" : "image"}).find("img")["alt"] = img_alt
     tmpArticle.find("a")["href"] = link
     tmpArticle.find("div", attrs={"class" : "content"}).find("p").string = sentence
+    tmpArticle["class"] = style
+    tmpArticle[""] = ""
 
     #print "=== result ==="
     #print soup.addtag.article.prettify()
 
     return soup.addtag.article #return PageElement
 
+def modifyArticle(article, title, img_src, img_alt, link, sentence, style):
+    tmpArticle = article
+    tmpArticle.find("h2").string = title
+    tmpArticle.find("span", attrs={"class" : "image"}).find("img")["src"] = img_src
+    tmpArticle.find("span", attrs={"class" : "image"}).find("img")["alt"] = img_alt
+    tmpArticle.find("a")["href"] = link
+    tmpArticle.find("div", attrs={"class" : "content"}).find("p").string = sentence
+    tmpArticle["class"] = style
 
 if __name__ == "__main__":
     title = "TITLE"
@@ -43,7 +56,8 @@ if __name__ == "__main__":
     img_alt = "IMAGE_ALT"
     link = "LINK"
     sentence = "SENTENCE"
-    returnPageElement = writeArticle(title, img_src, img_alt, link, sentence)
+    style = "STYLE"
+    returnPageElement = writeArticle(title, img_src, img_alt, link, sentence, style)
     print returnPageElement.prettify()
 
     print "=== print test ==="
