@@ -2592,7 +2592,8 @@
 		-ms-flex-wrap: wrap;
 		flex-wrap: wrap;
 		position: relative;
-		margin: -2.5em 0 0 -2.5em;
+		/*margin: -2.5em 0 0 -2.5em;*/
+		margin: -1.25em 0 0 -1.25em;
 	}
 
 		.tiles article { /*これがデフォルト値なのか．*/
@@ -2603,8 +2604,9 @@
 			position: relative;
    		/*ここだ!!windowの大きさによってタイルの大きさを変える．デフォルト値*/
 			/*width: calc(33.33333% - 2.5em);*/
-			width: calc(25.0% - 2.5em); /*変更後by TadaMatz*/
-			margin: 2.5em 0 0 2.5em;
+			width: calc(25.0% - 1.25em); /*変更後by TadaMatz*/
+			/*margin: 2.5em 0 0 2.5em;*/
+			margin: 1.25em 0 0 1.25em; /*変更後by TadaMatz*/
 		}
 
 			.tiles article > .image {
@@ -2844,13 +2846,15 @@
 		@media screen and (max-width: 980px) {
 
 			.tiles {
-				margin: -2.5em 0 0 -2.5em;
+				/*margin: -2.5em 0 0 -2.5em;*/
+				margin: -1.25em 0 0 -1.25em;
 			}
 
 				.tiles article {
 					/*width: calc(50% - 2.5em);*/
-					width: calc(33.33333% - 2.5em); /*変更後by TadaMatz*/
-					margin: 2.5em 0 0 2.5em;
+					width: calc(33.33333% - 1.25em); /*変更後by TadaMatz*/
+					/*margin: 2.5em 0 0 2.5em;*/
+					margin: 1.25em 0 0 1.25em;
 				}
 
 				/*added by TadaMatz*/
@@ -2906,7 +2910,8 @@
 				/*added by TadaMatz*/
 				.tiles article > .image img{
 					/*height: calc(100% * 3/4);*/
-					height: 240px;
+					/*height: 240px;*/
+					height: 120px;
 				}
  		}
 
