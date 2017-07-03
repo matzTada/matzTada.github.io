@@ -22,12 +22,12 @@ soup = BeautifulSoup(html, "html.parser")
 #append or modify new article. commet this section usually
 from tagMaker import writeArticle, modifyArticle
 editMode = "modify" # ---clear BE SUPER CAREFULL!!
-title = ""
+title = "matztada github website"
 img_src = "" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
 img_alt = ""
 link = "" #github.io page "http://matztada.github.io/"
 sentence = "Linked"
-style = "" #style0 for gray window
+style = "style" #style0 for gray window
 if editMode == "append":
     returnPageElement = writeArticle(title, img_src, img_alt, link, sentence, style)
     print returnPageElement.prettify()
