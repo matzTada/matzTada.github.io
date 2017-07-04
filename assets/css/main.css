@@ -2606,7 +2606,7 @@
 			/*width: calc(33.33333% - 2.5em);*/
 			width: calc(25.0% - 1.25em); /*変更後by TadaMatz*/
 			/*margin: 2.5em 0 0 2.5em;*/
-			margin: 1.25em 0 0 1.25em; /*変更後by TadaMatz*/
+      margin: 1.25em 0 0 1.25em;
 		}
 
 			.tiles article > .image {
@@ -2873,8 +2873,7 @@
 			}
 
 				.tiles article {
-					/*width: calc(50% - 1.25em);*/
-					width: calc(33.33333% - 1.25em); /*変更後by TadaMatz*/
+					width: calc(50% - 1.25em);
 					margin: 1.25em 0 0 1.25em;
 				}
 
@@ -2888,8 +2887,7 @@
 				/*added by TadaMatz*/
 				.tiles article > .image img{
 					/*height: calc(50% * 3/4);*/
-					/*height: 240px;*/
-					height:120px; /*変更後*/
+					height: 240px;
 				}					
 
 		}
@@ -2901,17 +2899,14 @@
 			}
 
 				.tiles article {
-					/*width: 100%;*/
-					width: calc(50% - 1.25em); /*変更後*/
-					/*margin: 1.25em 0 0 0;*/
-					margin: 1.25em 0 0 1.25em; /*変更後*/
+					width: 100%;
+					margin: 1.25em 0 0 0;
 				}
 
 				/*added by TadaMatz*/
 				.tiles article > .image img{
 					/*height: calc(100% * 3/4);*/
-					/*height: 240px;*/
-					height: 120px;
+					height: 240px;
 				}
  		}
 
