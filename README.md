@@ -6,11 +6,16 @@
 	<img src="https://matztada.github.io/images/screenshot.png" alt="" width=50%>
 </a>  
 
-## Content handler
+## Content handler by Python
 
 * can change ```style``` attribute of ```article``` tag based on the pre-defined sequence
-* can "append", "modify", "clear" articles
+* can ```append```, ```modify```, ```clear``` articles
+* create ```index.html``` based on ```index_seed.html```
 
+## Color Changer by JavaScript
+
+* Color set will be selected with Checkbox
+* Color set changed when button pushed
 
 ## tips
 ### html handling with Python
@@ -23,4 +28,3 @@
 	* [tag].string.replace_with("[string]")で文字を変えられる
 	* ```["attribute"]```で属性
 	* ```.string```でタグに挟まれた中身の文字
-	* 
