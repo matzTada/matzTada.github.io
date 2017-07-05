@@ -1,7 +1,7 @@
 // var colorArray = ["style1", "style2", "style3", "style4", "style5", "style6", "style7"]
 // var colorArray = ["style1", "style2"]
 
-function changeColor(colorArray) {
+function updateColor(colorArray) {
   var colorArrayItr = 0
 
   var arts = document.getElementsByTagName("article");
@@ -20,6 +20,18 @@ function changeColor(colorArray) {
         arts[i].className = "style0";         
       }
   }
+};
+
+function changeColor(){
+  var result = [];
+  var elems = document.getElementsByName("colorCheckBoxs");
+  for(var i = 0; i < elems.length; i++){
+    if(elems[i].checked){
+      result.push(elems[i].value);
+    }
+  }
+  // console.log(result.toString());
+  updateColor(result);
 };
 
 // changeColor(["style1", "style5"]);
