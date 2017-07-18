@@ -11,11 +11,19 @@
 * can change ```style``` attribute of ```article``` tag based on the pre-defined sequence
 * can ```append```, ```modify```, ```clear``` articles
 * create ```index.html``` based on ```index_seed.html```
+* 最悪jsがくるっても，htmlそのものをファイルとして読み書きしているという点に利点はあるかも
 
 ## Color Changer by JavaScript
 
 * Color set will be selected with Checkbox
 * Color set changed when button pushed
+
+## To Do
+
+* sorting
+	* 既存のソート
+	* 名前順	
+* 更新日を引っ張ってこれるようにしたい
 
 ## tips
 ### html handling with Python
