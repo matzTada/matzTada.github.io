@@ -1,0 +1,48 @@
+div.Tile {
+  position: relative;
+  width: calc(90px + 5px + 5px);
+  height: calc(120px + 5px + 5px);
+  background-color: #38A3DB;
+  margin: 5px;
+  float: left;
+}
+
+div.Tile:hover {
+  -webkit-transform: scale(1.1, 1.1);
+  /* IEの場合は -ms-transform: scale(1.1, 1.1); */
+  /*background-image: url("white_vpvot.png");*/
+  background-repeat: no-repeat;
+  background-position: right top;
+  opacity: 0.75;
+}
+
+span.TileTitle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-family: Meiryo UI;
+  font-size: 16pt;
+  color: White;
+}
+
+span.TileContents {
+  position: absolute;
+  padding: 5px;
+  /*top: 10%;*/
+  font-family: Meiryo UI;
+  font-size: 24pt;
+  color: White;
+}
+
+div.Tile img{
+  width: 90px;
+  height: 120px;
+}
+
+.uncovered img{
+    visibility: visible;
+}
+
+.covered img{
+    visibility: hidden;
+}

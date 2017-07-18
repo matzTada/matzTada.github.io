@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>memoryGame</title>
+  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+  <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <script type="text/javascript" src="./memoryGame.js"></script>
+  <link rel="stylesheet" type="text/css" href="./memoryGame.css">
+</head>
+
+<body>
+  <h1>memoryGame</h1>
+  with Japanese young artists
+  <h2>remaining: <span class="js-count"></span> times</h2>
+  <form id='number-form'>
+    <label for='number-form'>number of cards</label>
+    <input id='number-text' type='text' name='number-text' value=8>
+    <button class="js-reset">reset</button>
+    <!-- <input type='submit' value='send' /> -->
+  </form>
+  <div id="js-contents" style="width:100%">
+    <!-- contents added by js -->
+    <!--  
+    <div class="Tile">
+      <span class="TileContents">
+        <img src="./image/fukaseSekaowa.jpg" ref="http://r-humors.com/wp-content/uploads/2015/03/fuka.jpg" />
+      </span>
+      <span class="TileTitle">
+      </span>
+    </div> 
+    -->
+  </div>
+  <h2>remaining: <span class="js-count"></span> times</h2>
+  <button class="js-expose">expose</button>
+  <button class="js-conceal">conceal</button>
+</body>
+
+</html>
