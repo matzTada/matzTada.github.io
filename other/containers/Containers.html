@@ -1,0 +1,629 @@
+<!-- 
+  Containers written by Tada Matz 
+  2018/July/10th
+
+  Basic version of container movement visualization.
+  There are many things to do...
+
+  Using p5.js for visualization.
+  almost written from scratch.
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/p5.min.js"></script>
+  <style>
+    body {padding: 0; margin: 0;} /* to avoid to show scroll bars*/
+    canvas {display: block;}  /* to avoid to show scroll bars*/
+  </style>
+</head>
+<body>
+  
+<script language="javascript" type="text/javascript">  
+
+
+var conts = [];
+var bays = [];
+var rtgs = [];
+var boxsize = 20;
+var containerspeed = 10;
+var rtgspeed = 5;
+var lanemax = 4;
+var baymax = 8;
+var slotmax = 4;
+var samemax = 40;
+
+var rtgmax = 10;
+
+var moveflag = true;
+
+var queconts;
+var queconts_rtg;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight, WEBGL);
+
+  var tmpid = 0;
+
+  for (var numlane = 0; numlane < lanemax; numlane++) {
+    for (var numbay = 0; numbay < baymax; numbay++) {
+      var baypx = 8*numlane*boxsize;
+      var baypy = 4*numbay*boxsize; 
+      bays.push({
+        baylane: numlane,
+        bayid: numbay, 
+        px: baypx,
+        py: baypy,
+        members: []
+      });
+
+      for (var numx = 0; numx < slotmax; numx++) {
+        for (var numz = 0; numz < random(0,2); numz++) {
+          var tmpobj = new Container({
+            id: tmpid++,
+            px: numx*boxsize + baypx,
+            py: baypy,
+            pz: numz*boxsize,
+            pr: 0, // roll, degree, x-axis rotation
+            pp: 0, // pich, degree, y-axis rotation
+            pa: 0, // yaw, degree, z-axis rotation
+            pw: boxsize*0.9,
+            ph: 2*boxsize*0.9,
+            pd: boxsize*0.9,
+
+            vx: 0,
+            vy: 0,
+            vz: 0,
+
+            path: [],
+
+            baylane: numlane,
+            bayid: numbay,
+            bayx: numx,
+            bayz: numz,
+
+            fillcolor: color(random(200,256),random(200,256),random(200,256)),
+            strokecolor: 0
+          });
+
+          conts.push(tmpobj);
+          bays[bays.length - 1].members.push(tmpobj);
+
+        }  
+      }
+    }
+  }
+
+  // create RTG
+  for (var i = 0; i < rtgmax; i++) {
+    var tmpbaylane = Math.floor(random(0,lanemax));
+    var tmpbayid = Math.floor(random(0, baymax));
+    rtgs.push(new Rtg({
+      id: 0,
+      px: (8*tmpbaylane-2)*boxsize,
+      py: 4*tmpbayid*boxsize,
+      pz: 0,
+      pr: 0, // roll, degree, x-axis rotation
+      pp: 0, // pich, degree, y-axis rotation
+      pa: 0, // yaw, degree, z-axis rotation
+      pw: 7*boxsize*0.9,
+      ph: 2*boxsize*0.9,
+      pd: 0*boxsize*0.9,
+
+      vx: 0,
+      vy: 0,
+      vz: 0,
+
+      path: [],
+
+      baylane: tmpbaylane,
+      bayid: tmpbayid,
+      bayx: -2,
+      bayz: 0,
+
+      fillcolor: 255,
+      strokecolor: color(random(0, 256), random(0, 256), random(0, 256))
+    }));
+  }
+}
+
+function draw() {
+  background(127);
+
+  // calculation
+  queconts = [];
+  queconts_rtg = [];
+  for(var item of conts){
+    if(item.moving){
+      queconts.push(item);
+    }
+    // planning rtg movement
+    if(item.moving && item.path[0].meca.indexOf("rtg") >=0 ){
+      queconts_rtg.push(item);
+    } 
+  }
+
+  if(queconts_rtg.length > 0) {
+    queconts_rtg.sort(function(a, b){
+      if(a.jobinfo.frameCount < b.jobinfo.frameCount) return -1;
+      if(a.jobinfo.frameCount > b.jobinfo.frameCount) return 1;
+      return 0;
+    });
+
+    console.log(queconts_rtg.length)
+
+    var enablertgs = [];
+    for(var tmprtg of rtgs){
+      if(!tmprtg.grabbing && !tmprtg.moving && !tmprtg.targeting){
+        enablertgs.push(tmprtg);
+      }
+    }
+
+    var enablequeconts_rtg = [];
+    for(var tmpjobcont of queconts_rtg){
+      if(!tmpjobcont.grabbed && !tmpjobcont.targeted){
+        enablequeconts_rtg.push(tmpjobcont);
+      }
+    }
+
+    for(var i = 0; i < Math.min(enablertgs.length, enablequeconts_rtg.length); i++){
+      var tmprtg = enablertgs[i];
+      var tmpjobcont = enablequeconts_rtg[i];
+
+      var orientedPath = [];    
+
+      if(tmprtg.baylane != tmpjobcont.path[0].baylane){
+        orientedPath.push({meca: tmpjobcont.path[0].meca, x: tmprtg.px, y: 4*baymax*boxsize, z: 0});          
+        orientedPath.push({meca: tmpjobcont.path[0].meca, x: (tmpjobcont.path[0].baylane*8 - 2)*boxsize, y: 4*baymax*boxsize, z: 0});          
+      }
+      orientedPath.push({meca: tmpjobcont.path[0].meca, x: (tmpjobcont.path[0].baylane*8 - 2)*boxsize, y: tmpjobcont.path[0].bayid*4*boxsize, z: 0,
+        baylane: tmpjobcont.path[0].baylane, bayid: tmpjobcont.path[0].bayid});
+
+      tmprtg.moving = true;
+      tmprtg.path = orientedPath;
+      tmprtg.baylane = tmpjobcont.path[0].baylane;
+      tmprtg.bayid = tmpjobcont.path[0].bayid;
+
+      tmprtg.grabbingcont = tmpjobcont;
+      tmpjobcont.grabbedrtg = tmprtg;
+
+      tmprtg.targeting = true;
+      tmpjobcont.targeted = true;
+    }
+  }
+
+  // move RTG
+  for(var tmprtg of rtgs){
+    tmprtg.orient();
+    if(moveflag) if(!tmprtg.grabbing) tmprtg.move();
+  }
+
+  var jobconts = [];
+
+  for(var item of queconts){
+    trueflag = false;
+    if(item.path[0].meca.indexOf("iht") >= 0){
+      trueflag = true;
+    }else if(item.path[0].meca.indexOf("rtg") >= 0
+      && item.grabbedrtg
+      && !item.grabbedrtg.moving
+      && item.path[0].baylane == item.grabbedrtg.baylane
+      && item.path[0].bayid == item.grabbedrtg.bayid
+      ){
+      trueflag = true;
+      item.grabbed = true;
+      item.grabbedrtg.grabbing = true;
+    }   
+    if(trueflag) {
+      jobconts.push(item);
+    }
+  }
+
+  for(var tmpcont of jobconts){
+    tmpcont.orient();
+    if(moveflag) tmpcont.move();
+  }
+
+  if(queconts.length < samemax) randomPickMove(queconts);
+
+  // rtg check
+  for(var tmprtg of rtgs){
+    if(tmprtg.grabbing){
+      if(!tmprtg.grabbingcont){
+        tmprtg.grabbing = false;
+      }else if(tmprtg.grabbingcont.path.length == 0){
+        tmprtg.grabbing = false;
+        tmprtg.targeting = false;
+        tmprtg.grabbingcont.grabbed = false;
+        tmprtg.grabbingcont.grabbedrtg = null;
+        tmprtg.grabbingcont.targeted = false;
+        tmprtg.grabbingcont = null
+      }else{
+        if(tmprtg.grabbingcont.path[0].meca.indexOf("iht") >= 0) {
+          tmprtg.grabbing = false;
+          tmprtg.targeting = false;
+          tmprtg.grabbingcont.grabbed = false;
+          tmprtg.grabbingcont.grabbedrtg = null;
+          tmprtg.grabbingcont.targeted = false;
+          tmprtg.grabbingcont = null
+        }
+      }
+    }
+  }
+
+
+  // visualize-----------------
+  orbitControl()
+  // if(queconts[0]) camera(queconts[0].px, queconts[0].py, queconts[0].pz, 0, 0, 0, 1, 1, 0);
+
+  // rotate space
+  rotateX(radians(30));
+  // rotateY(frameCount * 0.01);
+  // rotateZ(radians(210) + frameCount * 0.001);
+  rotateZ(radians(210));
+
+  // // console.log(frameRate());
+  stroke(255, 0, 0);
+  fill(255, 0, 0);
+  beginShape(LINES);
+  vertex(0,0,0); 
+  vertex(400,0,0);
+  endShape();
+  stroke(0, 255, 0);
+  fill(0, 255, 0);
+  beginShape(LINES);
+  vertex(0,0,0); 
+  vertex(0,400,0);
+  endShape();
+  stroke(0, 0, 255);
+  fill(0, 0, 255);
+  beginShape(LINES);
+  vertex(0,0,0); 
+  vertex(0,0,400);
+  endShape();
+  noStroke();
+
+  // visualize
+  for(var tmprtg of rtgs){
+    tmprtg.show();
+  }
+
+  for(var tmpcont of conts){
+    tmpcont.show();
+  }
+}
+
+function Container(param){
+  this.id = param.id; 
+  this.px = param.px; 
+  this.py = param.py; 
+  this.pz = param.pz; 
+  this.pr = param.pr; // roll, degree, x-axis rotation
+  this.pp = param.pp; // pich, degree, y-axis rotation
+  this.pa = param.pa; // yaw, degree, z-axis rotation
+  this.pw = param.pw; 
+  this.ph = param.ph; 
+  this.pd = param.pd; 
+
+  this.vx = param.vx; 
+  this.vy = param.vy; 
+  this.vz = param.vz; 
+
+  this.path = param.path;
+
+  this.baylane = param.baylane;
+  this.bayid = param.bayid;
+  this.bayx = param.bayx;
+  this.bayz = param.bayz;
+
+  this.fillcolor = param.fillcolor;
+  this.strokecolor = param.strokecolor;
+
+  this.moving = false;
+  this.jobinfo = null;
+
+  this.grabbed = false;
+  this.grabbedrtg = null;
+
+  this.targeted = false;
+
+  this.orient = function(){
+    if(this.path.length == 0){
+      this.vx = 0;
+      this.vy = 0;
+      this.vz = 0;
+    }else{
+      this.vx = containerspeed * Math.sign(this.path[0].x - this.px);
+      this.vy = containerspeed * Math.sign(this.path[0].y - this.py);   
+      this.vz = containerspeed * Math.sign(this.path[0].z - this.pz);
+    }
+  }
+
+  this.move = function(){
+    if(!this.moving) return;
+    this.px += this.vx;
+    this.py += this.vy;
+    this.pz += this.vz;
+
+    if(this.path.length == 0) return;
+
+    if(Math.abs(this.px - this.path[0].x) < 1
+      && Math.abs(this.py - this.path[0].y) < 1
+      && Math.abs(this.pz - this.path[0].z) < 1){
+      this.px = this.path[0].x;
+      this.py = this.path[0].y;
+      this.pz = this.path[0].z;
+      this.path.shift();
+      if(this.path.length == 0){
+        // job finished
+        this.moving = false;
+        this.jobinfo = null;
+      }
+    }
+  }
+
+  this.show = function(){
+    fill(this.fillcolor);
+    if(this.moving){
+      switch (this.path[0].meca){
+        case "rtg-up": fill(color(255,0,0)); break;
+        case "iht-out": fill(color(0,255,0)); break;
+        case "iht-in": fill(color(255,255,0)); break;
+        case "rtg-down": fill(color(0,0,255)); break;
+        default: break;
+      }
+    } 
+    stroke(this.strokecolor);
+    push();
+      rotateX(radians(this.pr));
+      rotateY(radians(this.pp));
+      rotateZ(radians(this.pa));
+      translate(-8*lanemax*boxsize/2, -4*baymax*boxsize/2, 0);
+      translate(this.px + this.pw/2, this.py + this.ph/2, this.pz + this.pd/2);
+      box(this.pw, this.ph, this.pd);
+    pop();
+    noFill();
+    noStroke();
+  }
+};
+
+function Rtg(param){
+  this.id = param.id; 
+  this.px = param.px; 
+  this.py = param.py; 
+  this.pz = param.pz; 
+  this.pr = param.pr; // roll, degree, x-axis rotation
+  this.pp = param.pp; // pich, degree, y-axis rotation
+  this.pa = param.pa; // yaw, degree, z-axis rotation
+  this.pw = param.pw; 
+  this.ph = param.ph; 
+  this.pd = param.pd; 
+
+  this.vx = param.vx; 
+  this.vy = param.vy; 
+  this.vz = param.vz; 
+
+  this.path = param.path;
+
+  this.baylane = param.baylane;
+  this.bayid = param.bayid;
+
+  this.fillcolor = param.fillcolor;
+  this.strokecolor = param.strokecolor;
+
+  this.moving = false;
+  this.jobinfo = null;
+
+  this.grabbing = false;
+  this.grabbingcont = null;
+
+  this.targeting = false;
+
+  this.orient = function(){
+    if(this.path.length == 0){
+      this.vx = 0;
+      this.vy = 0;
+      this.vz = 0;
+    }else{
+      this.vx = rtgspeed * Math.sign(this.path[0].x - this.px);
+      this.vy = rtgspeed * Math.sign(this.path[0].y - this.py);   
+      this.vz = rtgspeed * Math.sign(this.path[0].z - this.pz);
+    }
+  }
+
+  this.move = function(){
+    if(!this.moving) return;
+    this.px += this.vx;
+    this.py += this.vy;
+    this.pz += this.vz;
+
+    if(this.path.length == 0) return;
+
+    if(Math.abs(this.px - this.path[0].x) < 1
+      && Math.abs(this.py - this.path[0].y) < 1
+      && Math.abs(this.pz - this.path[0].z) < 1){
+      this.px = this.path[0].x;
+      this.py = this.path[0].y;
+      this.pz = this.path[0].z;
+      this.path.shift();
+      if(this.path.length == 0){
+        // job finished
+        this.moving = false;
+        this.jobinfo = null;
+        this.grabbing = true;
+      }
+    }
+  }
+
+  this.show = function(){
+    noFill();
+    if(this.moving){
+      switch (this.path[0].meca){
+        case "rtg-up": stroke(color(200,0,0)); break;
+        case "rtg-down": stroke(color(0,0,200)); break;
+        default: break;
+      }
+    }
+    else if(this.grabbing) stroke(color(200, 0, 200)); 
+    else stroke(this.strokecolor);
+    push();
+      rotateX(radians(this.pr));
+      rotateY(radians(this.pp));
+      rotateZ(radians(this.pa));
+      translate(-8*lanemax*boxsize/2, -4*baymax*boxsize/2, 0);
+      translate(this.px + this.pw/2, this.py + this.ph/2, this.pz + this.pd/2);
+      box(this.pw, this.ph, this.pd);
+    pop();
+    noFill();
+    noStroke();
+  }
+};
+
+function keyPressed(){
+  switch(key){
+    case " ":
+      if(moveflag) moveflag = false;
+      else moveflag = true;
+    break;
+    default:
+    break;
+  }
+  // return false;
+}
+
+function randomPickMove(quecon){
+  // console.log("randomPickMove");
+  var orientedPath = [];
+  var vtcont;
+
+  vtcont = conts[Math.floor(random(0, conts.length))];
+  var fm_bay;
+  for(var item of bays){
+    if(item.baylane == vtcont.baylane && item.bayid == vtcont.bayid){
+      fm_bay = item;
+      break; 
+    }
+  }
+  var fm_maxheight = Math.max.apply(null, fm_bay.members.map(function(o){ return o.bayz;}));      
+  vtcont = fm_bay.members[Math.floor(random(0, fm_bay.members.length))];
+  var fm_slot = vtcont.bayx;
+  var fm_sameslotconts = [];
+  for(var item of fm_bay.members){
+    if(item.bayx == fm_slot) fm_sameslotconts.push(item);
+  }
+  var fm_height = Math.max.apply(null, fm_sameslotconts.map(function(o){ return o.bayz;}));
+
+  var to_bay = bays[Math.floor(random(0, bays.length))];
+  var to_maxheight = 0;
+  if(to_bay.members.length > 0) to_maxheight = Math.max.apply(null, to_bay.members.map(function(o){ return o.bayz;}));      
+  var to_slot = Math.floor(random(0, slotmax));
+  var to_sameslotconts = [];
+  for(var item of to_bay.members){
+    if(item.bayx == to_slot) to_sameslotconts.push(item);
+  }
+
+  var to_height = 0; 
+  if(fm_bay.baylane == to_bay.baylane
+    && fm_bay.bayid == to_bay.bayid
+    && fm_slot == to_slot){
+    to_height = fm_height;
+  }else if(to_sameslotconts.length > 0) {
+    to_height = Math.max.apply(null, to_sameslotconts.map(function(o){ return o.bayz;})) + 1;
+  }
+
+  // avoid selecting container where any moving container exists in the same slot.
+  for(var item of quecon){    
+    if(!item.jobinfo) continue;
+    if(
+      (fm_bay.baylane == item.jobinfo.fm_baylane 
+      && fm_bay.bayid == item.jobinfo.fm_bayid 
+      && fm_slot == item.jobinfo.fm_slot)
+      ||
+      (fm_bay.baylane == item.jobinfo.to_baylane 
+      && fm_bay.bayid == item.jobinfo.to_bayid 
+      && fm_slot == item.jobinfo.to_slot)
+      ||
+      (to_bay.baylane == item.jobinfo.fm_baylane 
+      && to_bay.bayid == item.jobinfo.fm_bayid 
+      && to_slot == item.jobinfo.fm_slot)
+      ||
+      (to_bay.baylane == item.jobinfo.to_baylane 
+      && to_bay.bayid == item.jobinfo.to_bayid 
+      && to_slot == item.jobinfo.to_slot)
+      ){
+      return;
+    } 
+  }
+
+  var tmpcont;
+  var tmpcontindex = 0;
+  for(var index = 0; index < fm_bay.members.length; index++){
+    var item = fm_bay.members[index];
+    if(item.bayx == fm_slot && item.bayz == fm_height){
+      tmpcont = item;
+      tmpcontindex = index; 
+      break;
+    }
+  }
+
+  if(tmpcont.moving) return;
+
+  fm_bay.members.splice(tmpcontindex, 1);
+
+  // path calculation
+  // from-bay to from-passage
+  orientedPath.push({meca: "rtg-up", baylane: fm_bay.baylane, bayid: fm_bay.bayid, x: tmpcont.px, y: tmpcont.py, z: (fm_maxheight+2)*boxsize});      
+  orientedPath.push({meca: "rtg-up", baylane: fm_bay.baylane, bayid: fm_bay.bayid, x: fm_bay.px - 2*boxsize, y: tmpcont.py, z: (fm_maxheight+2)*boxsize});
+  orientedPath.push({meca: "rtg-up", baylane: fm_bay.baylane, bayid: fm_bay.bayid, x: fm_bay.px - 2*boxsize, y: tmpcont.py, z: 0});
+
+  // from-passage to to-passage
+  if(fm_bay.baylane == to_bay.baylane && fm_bay.py <= to_bay.py){
+    orientedPath.push({meca: "iht-in", x: to_bay.px - 2*boxsize, y: to_bay.py, z: 0});
+  }else{
+    orientedPath.push({meca: "iht-out", x: fm_bay.px - 2*boxsize, y: 4*baymax*boxsize, z: 0});
+    orientedPath.push({meca: "iht", x: 8*lanemax*boxsize, y: 4*baymax*boxsize, z: 0});
+    orientedPath.push({meca: "iht", x: 8*lanemax*boxsize, y: -4*boxsize, z: 0});
+    orientedPath.push({meca: "iht", x: to_bay.px - 2*boxsize, y: -4*boxsize, z: 0});
+    orientedPath.push({meca: "iht-in", x: to_bay.px - 2*boxsize, y: to_bay.py, z: 0});
+  }
+
+  // to-passsage to to-bay
+  orientedPath.push({meca: "rtg-down", baylane: to_bay.baylane, bayid: to_bay.bayid, x: to_bay.px - 2*boxsize, y: to_bay.py, z: (to_maxheight+2)*boxsize});
+  orientedPath.push({meca: "rtg-down", baylane: to_bay.baylane, bayid: to_bay.bayid, x: to_bay.px + to_slot*boxsize, y: to_bay.py, z: (to_maxheight+2)*boxsize});
+  orientedPath.push({meca: "rtg-down", baylane: to_bay.baylane, bayid: to_bay.bayid, x: to_bay.px + to_slot*boxsize, y: to_bay.py, z: (to_height)*boxsize});
+
+  to_bay.members.push(tmpcont);
+
+  tmpcont.moving = true;
+  tmpcont.path = orientedPath;
+  tmpcont.baylane = to_bay.baylane;
+  tmpcont.bayid = to_bay.bayid;
+  tmpcont.bayx = to_slot;
+  tmpcont.bayz = to_height;
+
+  var tmpjobinfo = {
+    frameCount: frameCount,
+    fm_baylane: fm_bay.baylane, 
+    fm_bayid: fm_bay.bayid, 
+    fm_slot: fm_slot, 
+    fm_height: fm_height, 
+    to_baylane: to_bay.baylane, 
+    to_bayid: to_bay.bayid, 
+    to_slot: to_slot, 
+    to_height: to_height,  
+  }
+
+  tmpcont.jobinfo = tmpjobinfo;
+
+  console.log(
+    "fc", frameCount,
+    "id", tmpcont.id, 
+    "fm", fm_bay.baylane, fm_bay.bayid, fm_slot, fm_height, 
+    "to", to_bay.baylane, to_bay.bayid, to_slot, to_height );
+}
+
+</script>
+
+</body>
+</html>
+
