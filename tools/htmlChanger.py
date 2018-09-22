@@ -6,13 +6,13 @@
 inFileName = "../index_seed.html"
 outFileName = "../index.html"
 
-editMode = "" # append OR modify OR clear (BE SUPER CAREFULL)!!
-title = ""
-img_src = "" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
+editMode = "insert" # insert OR append OR modify OR clear (BE SUPER CAREFULL)!!
+title = "Box Fitting"
+img_src = "http://img.youtube.com/vi/fY7vVAspWls/0.jpg" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
 img_alt = ""
-link = "" #github.io page "http://matztada.github.io/"
-sentence = ""
-style = "" #style0 for gray window
+link = "https://github.com/matzTada/BoxFitting" #github.io page "http://matztada.github.io/"
+sentence = "Box Fitting and Image processing. Looking without considering."
+style = "style" #style0 for gray window
 
 #initialize colorArray
 colorArray = ["style1", "style2", "style3", "style4", "style5", "style6", "style7"] #values in colorArray must suit style in css
@@ -32,20 +32,24 @@ from tagMaker import writeArticle, modifyArticle
 
 if editMode == "append":
     returnPageElement = writeArticle(title, img_src, img_alt, link, sentence, style)
-    print returnPageElement.prettify()
-    soup.find("section", attrs={"class" : "tiles"}).append(returnPageElement)
+    print(returnPageElement.prettify())
+    soup.find("section", attrs={"class" : "tiles"}).append(0, returnPageElement) # if use "append" put the element as a last article
+elif editMode == "insert":
+    returnPageElement = writeArticle(title, img_src, img_alt, link, sentence, style)
+    print(returnPageElement.prettify())
+    soup.find("section", attrs={"class" : "tiles"}).insert(0, returnPageElement) # if use "append" put the element as a last article
 elif editMode == "modify":
     for tmpArticle in soup.find_all("article"):
-        if tmpArticle.find("h2").string.encode().strip() == title:
+        if tmpArticle.find("h2").string.encode().strip() == title.encode():
             modifyArticle(tmpArticle, title, img_src, img_alt, link, sentence, style)
-            print "find the article!!"
-            print tmpArticle.prettify()
+            print("find the article!!")
+            print(tmpArticle.prettify())
             break
     else:
-        print "cannot find the article."
+        print("cannot find the article.")
 elif editMode == "clear":
     for tmpArticle in soup.find_all("article"):
-        if tmpArticle.find("h2").string.encode().strip() == title:
+        if tmpArticle.find("h2").string.encode().strip() == title.encode():
             tmpArticle.replace_with("")
 inputFile = open(inFileName, "w")
 inputFile.write(soup.prettify(formatter="html"))
@@ -61,12 +65,12 @@ from bs4 import BeautifulSoup
 soup = BeautifulSoup(html, "html.parser")
 #changing each article based on color array
 for tmpArticle in soup.find_all("article"):
-    # print "--- an article ---"
-    # print "title   : " + tmpArticle.find("h2").string.encode()
-    # print "style   : " + tmpArticle["class"][0].encode()
-    # print "image   : " + tmpArticle.find("span", attrs={"class" : "image"}).find("img")["src"].encode()
-    # print "link    : " + tmpArticle.find("a")["href"].encode()
-    # print "content : " + tmpArticle.find("div", attrs={"class" : "content"}).find("p").string.encode()    
+    # print("--- an article ---"
+    # print("title   : " + tmpArticle.find("h2").string.encode()
+    # print("style   : " + tmpArticle["class"][0].encode()
+    # print("image   : " + tmpArticle.find("span", attrs={"class" : "image"}).find("img")["src"].encode()
+    # print("link    : " + tmpArticle.find("a")["href"].encode()
+    # print("content : " + tmpArticle.find("div", attrs={"class" : "content"}).find("p").string.encode()
 
     if len(tmpArticle["class"][0]) > 0 and tmpArticle["class"][0] != "style0":
         tmpArticle["class"][0] = colorArray[colorArrayItr]
@@ -75,7 +79,7 @@ for tmpArticle in soup.find_all("article"):
             colorArrayItr = 0
     else:
         tmpArticle["class"][0] = "style0"
-    
+
 #write to files
 outputFile = open(outFileName, "w")
 outputFile.write(soup.prettify(formatter="html"))

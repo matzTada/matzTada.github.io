@@ -64,9 +64,9 @@ if __name__ == "__main__":
     sentence = "SENTENCE"
     style = "STYLE"
     returnPageElement = writeArticle(title, img_src, img_alt, link, sentence, style)
-    print returnPageElement.prettify()
+    print(returnPageElement.prettify())
 
-    print "=== print test ==="
+    print("=== print test ===")
     soup = BeautifulSoup("<hoge></hoge>", "html.parser")
     soup.append(returnPageElement)
-    print soup.prettify()
+    print(soup.prettify())
