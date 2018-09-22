@@ -6,6 +6,14 @@
 	<img src="https://matztada.github.io/images/screenshot.png" alt="" width=50%>
 </a>  
 
+## To Do
+
+* sorting
+	* 既存のソート
+	* 名前順	
+* 更新日を引っ張ってこれるようにしたい
+* てか何ならGitHubに挙げたプロジェクト自動で読み込んで追加できるようにしたいんだが...いちいち更新するの面倒くさい
+
 ## Content handler by Python
 
 * can change ```style``` attribute of ```article``` tag based on the pre-defined sequence
@@ -17,13 +25,6 @@
 
 * Color set will be selected with Checkbox
 * Color set changed when button pushed
-
-## To Do
-
-* sorting
-	* 既存のソート
-	* 名前順	
-* 更新日を引っ張ってこれるようにしたい
 
 ## tips
 ### html handling with Python
