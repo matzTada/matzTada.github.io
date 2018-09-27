@@ -1,0 +1,323 @@
+
+
+
+
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+  <style>
+    body {padding: 0; margin: 0;} /* to avoid to show scroll bars*/
+    canvas {display: block;}  /* to avoid to show scroll bars*/
+  </style>
+</head>
+<body>
+  <div id="p5canvas"></div>
+  <input type="file" id="fileaddbutton" name="files[]" multiple />
+</body>
+
+<script language="javascript" type="text/javascript">
+document.getElementById('fileaddbutton').addEventListener('change', handleFileSelect, false);
+var pts = [];
+var cellsize = 40;
+var MARGIN = 0; // for Delaunoy Triangle
+var gazous = [];
+var gazoucnt = 0;
+function setup() {
+  var can = createCanvas(windowWidth, windowHeight);
+  can.parent("p5canvas");
+  background(127);
+  for (var i = 0; i < 200; i++) {
+    pts.push(new Particle({
+      x: random(0, width),
+      y: random(0, height),
+      vx: random(-2, 2),
+      vy: random(-2, 2),
+      r: 5,
+      area: cellsize*4
+    })
+    );
+  }
+}
+function draw() {
+  // cellsize = width/20;
+  var exmatx = ceil(width/cellsize);
+  var exmaty = ceil(height/cellsize);
+  var exmat = new Array(exmaty);
+  for(let y = 0; y < exmaty; y++){
+    exmat[y] = new Array(exmatx).fill(0);
+  }
+  for (var y = 0; y < exmaty; y++) {
+    for (var x = 0; x < exmatx; x++) {
+      for(var tmppt of pts){
+        if(x*cellsize < tmppt.x && tmppt.x < (x+1)*cellsize && y*cellsize < tmppt.y && tmppt.y < (y+1)*cellsize ){
+          exmat[y][x] = 1;
+        }
+      }
+    }
+  }
+  for(var tmppt of pts){
+    tmppt.move(exmat);
+  }
+  background(0);
+  stroke(63);
+  for (var y = 0; y < exmaty; y++) {
+    for (var x = 0; x < exmatx; x++) {
+      if(exmat[y][x]==1){
+        fill(32);
+        rect(x*cellsize, y*cellsize, cellsize, cellsize);
+      }else if(exmat[y][x]==2){
+        fill(32, 0, 0);
+        rect(x*cellsize, y*cellsize, cellsize, cellsize);
+      }
+    }
+  }
+  for(var tmppt of pts){
+    tmppt.show(pts);
+  }
+  // display neighbor relation
+  stroke(127, 127, 0);
+  for(var tmppt2 of pts){
+    for(var tmppt1 of pts){
+      if(dist(tmppt2.x, tmppt2.y, tmppt1.x, tmppt1.y) < tmppt2.area/2){
+        line(tmppt2.x, tmppt2.y, tmppt1.x, tmppt1.y);
+      }
+    }
+  }
+  // Delaunay traiangle drawing
+  // translation from pts to vts
+  var vts = [];
+  for (var i = 0; i < pts.length; i++) {
+    var v = createVector(pts[i].x, pts[i].y);
+    vts.push(v);
+  }
+  var delaunayTriangulation = new DelaunayTriangulation();
+  for (var i = 0; i < vts.length; i++) {
+    delaunayTriangulation.add(vts[i]);
+  }
+  var triangles = delaunayTriangulation.getTriangles();
+  var tmpbaseimg;
+  if(gazous.length > 0){ // deside color
+    var tmpbaseimg = gazous[gazous.length - 1];
+  }
+  stroke(0, 255, 0);
+  // drawing
+  for (var ti = 0; ti < triangles.length; ti++) {
+    var t = triangles[ti];
+    if(gazous.length > 0){
+      var tmpx = (t.vertices[0].x + t.vertices[1].x + t.vertices[2].x)/3;
+      var tmpy = (t.vertices[0].y + t.vertices[1].y + t.vertices[2].y)/3;
+      var tmpiro;
+      tmpiro = tmpbaseimg.get(
+        map(tmpx, 0, width, 0, tmpbaseimg.width),
+        map(tmpy, 0, height, 0, tmpbaseimg.height)
+        );
+      tmpiro = color(red(tmpiro), green(tmpiro), blue(tmpiro));
+      fill(tmpiro);
+    }else{
+      noFill();
+    }
+    drawTriangle(
+      t.vertices[0].x, t.vertices[0].y,
+      t.vertices[1].x, t.vertices[1].y,
+      t.vertices[2].x, t.vertices[2].y);
+  }
+}
+function Particle(param){
+  this.x = param.x;
+  this.y = param.y;
+  this.vx = param.vx;
+  this.vy = param.vy;
+  this.r = param.r;
+  this.area = param.area;
+  this.move = function(_exmat){
+    // get next cell
+    var nextx = this.x + this.vx;
+    var nexty = this.y + this.vy;
+    if(nextx < 0) nextx = width - nextx;
+    else if(width <= nextx) nextx = nextx - width;
+    if(nexty < 0) nexty = height - nexty;
+    else if(height <= nexty) nexty = nexty - height;
+    var nextnumx = floor(nextx/cellsize);
+    var nextnumy = floor(nexty/cellsize);
+    var numx = floor(this.x/cellsize);
+    var numy = floor(this.y/cellsize);
+    if((nextnumx != numx || nextnumy != numy) && (_exmat[nextnumy][nextnumx] == 1 || _exmat[nextnumy][nextnumx] == 2)){ // collision detection and stop
+      _exmat[numy][numx] = 2;
+      return;
+    }
+    this.x += this.vx;
+    this.y += this.vy;
+    if(this.x < 0) this.x = width;
+    else if(width <= this.x) this.x = 0;
+    if(this.y < 0) this.y = height;
+    else if(height <= this.y) this.y = 0;
+  }
+  this.show = function(_pts){
+    stroke(255);
+    noFill();
+    ellipse(this.x, this.y, this.r, this.r);
+    // show direction
+    stroke(255);
+    noFill();
+    line(this.x, this.y, this.x + this.vx, this.y + this.vy);
+    // // display area
+    // stroke(127);
+    // noFill();
+    // ellipse(this.x, this.y, this.area, this.area);
+  }
+}
+function windowResized(){
+  resizeCanvas(windowWidth, windowHeight);
+}
+function DelaunayTriangulation() {
+  this.triangles = [];
+  this.vertices = [];
+  this.superVertices = [];
+  this.add = function(_newv) {
+    for (var i = 0; i < this.vertices.length; i++) { // duplicate same point
+      if(_newv.x == this.vertices[i].x && _newv.y == this.vertices[i].y) {
+        return;
+      }
+    }
+    this.vertices.push(_newv);
+    var nextTriangles = [];
+    var newTriangles = [];
+    for (var ti = 0; ti < this.triangles.length; ti++) {
+      var tri = this.triangles[ti];
+      if(tri.circumCircle.isInCircle(_newv)) {
+        newTriangles = newTriangles.concat(tri.divide(_newv));
+      } else {
+        nextTriangles.push(tri);
+      }
+    }
+    for (var ti = 0; ti < newTriangles.length; ti++) {
+      var tri = newTriangles[ti];
+      var isIllegal = false;
+      for (var vi = 0; vi < this.vertices.length; vi++) {
+        if (this.isIllegalTriangle(tri, this.vertices[vi])) {
+          isIllegal = true;
+          break;
+        }
+      }
+      if (!isIllegal) {
+        nextTriangles.push(tri);
+      }
+    }
+    this.triangles = nextTriangles;
+  }
+  this.getTriangles = function() {
+    var ts = [];
+    for (var ti = 0; ti < this.triangles.length; ti++) {
+      var t = this.triangles[ti];
+      var hasSuperVertex = false;
+      for (var vi = 0; vi < 3; vi++) {
+        if (t.isContain(this.superVertices[vi])) {
+          hasSuperVertex = true;
+        }
+      }
+      if (!hasSuperVertex) {
+        ts.push(t);
+      }
+    }
+    return ts;
+  }
+  this.getTrianglesWithSuperTriangle = function() {
+    return this.triangles;
+  }
+  this.isIllegalTriangle = function(t, v) {
+    if(t.isContain(v)) {
+      return false;
+    }
+    return t.circumCircle.isInCircle(v);
+  }
+  var center = createVector(width / 2, height / 2);
+  var radius = sqrt(sq(width) + sq(height)) / 2;
+  var v1 = createVector(center.x - sqrt(3) * radius, center.y - radius);
+  var v2 = createVector(center.x + sqrt(3) * radius, center.y - radius);
+  var v3 = createVector(center.x, center.y +  2 * radius);
+  var t = new Triangle([v1, v2, v3]);
+  this.superVertices.push(v1);
+  this.superVertices.push(v2);
+  this.superVertices.push(v3);
+  this.vertices.push(v1);
+  this.vertices.push(v2);
+  this.vertices.push(v3);
+  this.triangles.push(t);
+}
+function Triangle(_vertices) {
+  this.vertices = _vertices;
+  var v1 = this.vertices[0];
+  var v2 = this.vertices[1];
+  var v3 = this.vertices[2];
+  var c = 2 * ((v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x));
+  var x = ((v3.y - v1.y) * (sq(v2.x) - sq(v1.x) + sq(v2.y) - sq(v1.y)) + (v1.y - v2.y) * (sq(v3.x) - sq(v1.x) + sq(v3.y) - sq(v1.y))) / c;
+  var y = ((v1.x - v3.x) * (sq(v2.x) - sq(v1.x) + sq(v2.y) - sq(v1.y)) + (v2.x - v1.x) * (sq(v3.x) - sq(v1.x) + sq(v3.y) - sq(v1.y))) / c;
+  var center = createVector(x, y);
+  var radius = v1.dist(center);
+  this.circumCircle = new Circle(center, radius);
+  this.divide = function(v) {
+    var tris = [];
+    for (var i = 0; i < 3; i++) {
+      var j = i == 2? 0: i + 1;
+      tris.push(new Triangle([this.vertices[i], this.vertices[j], v]));
+    }
+    return tris;
+  }
+  this.isContain = function(v) {
+    for (var i = 0; i < 3; i++) {
+      if (this.vertices[i] === v) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+function Circle(_center, _radius) {
+  this.center = _center;
+  this.radius = _radius;
+  this.isInCircle = function(v) {
+    return this.center.dist(v) < this.radius;
+  }
+}
+function drawTriangle(x1, y1, x2, y2, x3, y3){
+  beginShape();
+  vertex(x1, y1);
+  vertex(x2, y2);
+  vertex(x3, y3);
+  endShape(CLOSE);
+}
+function handleFileSelect(evt) { // image handling function
+  var files = evt.target.files;
+  for (var i = 0, f; f = files[i]; i++) {
+    if (!f.type.match('image.*')) continue;
+    var reader = new FileReader();
+    reader.onload = (function(theFile) {
+      return function(e) {
+        // var tmpreadimg = loadImage(e.target.result); // get image
+        // gazous.push(tmpreadimg);
+        var image = new Image(); // compress image
+        var tmpcanvas = document.createElement("canvas");
+        var ctx = tmpcanvas.getContext("2d");
+        image.onload = function(event){
+          var tmpw = 300, tmph = 300;
+          if(image.height < image.width){
+            tmph = tmpw*image.height/image.width;
+          }else{
+            tmpw = tmph*image.width/image.height;
+          }
+          tmpcanvas.width = tmpw;
+          tmpcanvas.height = tmph;
+          ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, tmpw, tmph);
+          var canvasImageURL = tmpcanvas.toDataURL();
+          gazous.push(loadImage(canvasImageURL));
+        };
+        image.src = e.target.result;
+      };
+    })(f);
+    reader.readAsDataURL(f);
+  }
+}
+</script>
+
+</html>
