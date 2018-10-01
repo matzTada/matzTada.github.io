@@ -1,0 +1,167 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+  <script src="./libraries/quicksettings.js" type="text/javascript"></script>
+  <script src="./libraries/p5.gui.js" type="text/javascript"></script>
+  <style>
+    body {padding: 0; margin: 0;} /* to avoid to show scroll bars*/
+    canvas {display: block;}  /* to avoid to show scroll bars*/
+  </style>
+</head>
+<body>
+  <div id="p5canvas"></div>
+  <input type="file" id="fileaddbutton" name="files[]" multiple />
+  <input type="button" id="resetButton" value="reset" onClick="reset()">
+  <input type="button" id="guiButton" value="gui" onClick="guiChange()">
+</body>
+
+<script language="javascript" type="text/javascript">
+
+document.getElementById('fileaddbutton').addEventListener('change', handleFileSelect, false);
+function reset(){
+  // exs = [];
+}
+function guiChange(){
+  guivisible = !guivisible;
+  if(guivisible) gui.show();
+  else gui.hide();
+}
+
+
+var cellsize = 100;
+var gazous = [];
+var gazoucnt = 0;
+
+// gui
+var gui;
+var guivisible = true;
+
+var cellshape = ["triangle", "rectangle", "circle"];
+
+
+function setup() {
+  // Setting up p5js canvas
+  var can = createCanvas(windowWidth, windowHeight);
+  can.parent("p5canvas");
+  background(127);
+
+  // for GUI
+  gui = createGui("MATZTRI");
+  gui.addGlobals(
+    "cellsize", "cellshape"
+    );
+
+  // load sample image.
+  gazous.push(loadImage("./resources/sample.jpg"));
+}
+
+function draw() {
+  background(127);
+
+  var tmpbaseimg;
+  if(gazous.length > 0){ // deside color
+    var tmpbaseimg = gazous[gazous.length - 1];
+  }
+  if(gazous.length > 0){ // deside color
+    var tmpbaseimg = gazous[gazous.length - 1];
+
+    if(cellshape == "rectangle" || cellshape == "circle"){
+      for (var tmpy = 0; tmpy < height; tmpy+=cellsize) {
+        for (var tmpx = 0; tmpx < width; tmpx+=cellsize) {
+          var tmpiro;
+          tmpiro = tmpbaseimg.get(
+            map(tmpx, 0, width, 0, tmpbaseimg.width),
+            map(tmpy, 0, height, 0, tmpbaseimg.height)
+            );
+          tmpiro = color(red(tmpiro), green(tmpiro), blue(tmpiro));
+          noStroke();
+          fill(tmpiro);
+          if(cellshape == "rectangle") rect(tmpx, tmpy, cellsize, cellsize);
+          else if(cellshape == "circle") ellipse(tmpx, tmpy, cellsize, cellsize);
+        }
+      }
+    }else if(cellshape == "triangle"){
+      // for Triangle
+      var toggle = true;
+      for (var tmpy = 0; tmpy < height; tmpy+= sqrt(3)*cellsize/2) {
+        toggle = !toggle;
+        var tmpx = -1*cellsize;
+        if(toggle) tmpx += 0.5*cellsize;
+        for (; tmpx < width; tmpx+=cellsize) {
+          var p1 = createVector(tmpx, tmpy);
+          var p2 = createVector(tmpx + cellsize, tmpy);
+          var p3 = createVector(tmpx + 0.5*cellsize, tmpy + sqrt(3)*cellsize/2);
+          var p4 = createVector(tmpx + 1.5*cellsize, tmpy + sqrt(3)*cellsize/2);
+          var c1 = createVector((p1.x+p2.x+p3.x)/3, (p1.y+p2.y+p3.y)/3)
+          var c2 = createVector((p4.x+p2.x+p3.x)/3, (p4.y+p2.y+p3.y)/3)
+
+          var tmpiro;
+          tmpiro = tmpbaseimg.get(
+            map(c1.x, 0, width, 0, tmpbaseimg.width),
+            map(c1.y, 0, height, 0, tmpbaseimg.height)
+            );
+          tmpiro = color(red(tmpiro), green(tmpiro), blue(tmpiro));
+          noStroke();
+          fill(tmpiro);
+          drawTriangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+
+          tmpiro = tmpbaseimg.get(
+            map(c2.x, 0, width, 0, tmpbaseimg.width),
+            map(c2.y, 0, height, 0, tmpbaseimg.height)
+            );
+          tmpiro = color(red(tmpiro), green(tmpiro), blue(tmpiro));
+          noStroke();
+          fill(tmpiro);
+          drawTriangle(p4.x, p4.y, p2.x, p2.y, p3.x, p3.y);
+        }
+      }
+    }
+  }
+}
+
+function drawTriangle(x1, y1, x2, y2, x3, y3){
+  beginShape();
+  vertex(x1, y1);
+  vertex(x2, y2);
+  vertex(x3, y3);
+  endShape(CLOSE);
+}
+
+function handleFileSelect(evt) { // image handling function
+  var files = evt.target.files;
+  for (var i = 0, f; f = files[i]; i++) {
+    if (!f.type.match('image.*')) continue;
+    var reader = new FileReader();
+    reader.onload = (function(theFile) {
+      return function(e) {
+        // var tmpreadimg = loadImage(e.target.result); // get image
+        // gazous.push(tmpreadimg);
+
+        var image = new Image(); // compress image
+        var tmpcanvas = document.createElement("canvas");
+        var ctx = tmpcanvas.getContext("2d");
+        image.onload = function(event){
+          var tmpw = 300, tmph = 300;
+          if(image.height < image.width){
+            tmph = tmpw*image.height/image.width;
+          }else{
+            tmpw = tmph*image.width/image.height;
+          }
+
+          tmpcanvas.width = tmpw;
+          tmpcanvas.height = tmph;
+          ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, tmpw, tmph);
+          var canvasImageURL = tmpcanvas.toDataURL();
+          gazous.push(loadImage(canvasImageURL));
+        };
+        image.src = e.target.result;
+      };
+    })(f);
+    reader.readAsDataURL(f);
+  }
+}
+
+</script>
+
+</html>
