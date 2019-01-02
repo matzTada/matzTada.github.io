@@ -7,11 +7,11 @@ inFileName = "../index_seed.html"
 outFileName = "../index.html"
 
 editMode = "insert" # insert OR append OR modify OR clear (BE SUPER CAREFULL)!!
-title = "Box Fitting"
-img_src = "http://img.youtube.com/vi/fY7vVAspWls/0.jpg" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
+title = "Triangles"
+img_src = "http://img.youtube.com/vi/-ipP9jfTaEQ/0.jpg" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
 img_alt = ""
-link = "https://github.com/matzTada/BoxFitting" #github.io page "http://matztada.github.io/"
-sentence = "Box Fitting and Image processing. Looking without considering."
+link = "https://github.com/matzTada/Triangles" #github.io page "http://matztada.github.io/"
+sentence = "Basic (fundamental) program for Image Processing by JavaScript."
 style = "style" #style0 for gray window
 
 #initialize colorArray
