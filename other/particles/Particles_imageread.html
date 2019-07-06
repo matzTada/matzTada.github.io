@@ -142,10 +142,10 @@ function Particle(param){
     var nextnumy = floor(nexty/cellsize);
     var numx = floor(this.x/cellsize);
     var numy = floor(this.y/cellsize);
-    if((nextnumx != numx || nextnumy != numy) && (_exmat[nextnumy][nextnumx] == 1 || _exmat[nextnumy][nextnumx] == 2)){ // collision detection and stop
-      _exmat[numy][numx] = 2;
-      return;
-    }
+//     if((nextnumx != numx || nextnumy != numy) && (_exmat[nextnumy][nextnumx] == 1 || _exmat[nextnumy][nextnumx] == 2)){ // collision detection and stop
+//       _exmat[numy][numx] = 2;
+//       return;
+//     }
     this.x += this.vx;
     this.y += this.vy;
     if(this.x < 0) this.x = width;
