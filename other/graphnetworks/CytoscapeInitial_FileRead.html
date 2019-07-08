@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Simple graph with File Read</title>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.0/cytoscape.min.js"></script>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+	<style type="text/css">
+		#cy {
+		  height: 600px;
+		  width: 100%;
+		  /* position: relative;
+		  left: 0;
+		  top: 0; */
+		}
+	</style>
+
+</head>
+<body>
+	<h2>Simple graph with File Read</h2>
+	<input type="file" id="fileaddbutton" name="files[]" multiple />
+
+	<div id="cy"></div>
+
+	<div>
+		<h3>Sample file to be read</h3>
+		From,To <br />
+		a,b <br />
+		b,c <br />
+		c,d <br />
+		a,f <br />
+		f,c <br />
+		f,g <br />
+		g,d <br />
+		a,b <br />
+		c,b <br />
+	</div>
+</body>
+
+<script type="text/javascript">
+
+// input -----------------------
+if(window.File){
+  console.log("File API is available");
+}else{
+  console.log("File API is NOT available")
+}
+
+var cy = cytoscape({
+
+  // container: document.getElementById('cy'), // container to render in
+  container: $('#cy'), // container to render in
+
+  elements: [],
+	// example for adding edges from data
+	// var eles = cy.add([
+	//   { group: 'nodes', data: { id: 'n0' }, position: { x: 100, y: 100 } },
+	//   { group: 'nodes', data: { id: 'n1' }, position: { x: 200, y: 200 } },
+	//   { group: 'edges', data: { id: 'e0', source: 'n0', target: 'n1' } }
+	// ]);
+
+  style: [ // the stylesheet for the graph
+    {
+      selector: 'node',
+      style: {
+        // 'background-color': '#666',
+        'label': 'data(id)'
+      }
+    },
+
+    {
+      selector: 'edge',
+      style: {
+        // 'width': 3,
+        // 'line-color': '#666',
+        // 'target-arrow-color': '#666',
+				'curve-style': 'straight',
+        'target-arrow-shape': 'triangle'
+      }
+    }
+  ],
+
+  // layout: {
+  //   name: 'cose', // circle
+  // }
+
+});
+
+
+document.getElementById('fileaddbutton').addEventListener('change', handleFileSelect, false);
+function handleFileSelect(evt) { // image handling function
+  var files = evt.target.files;
+  for (var i = 0, f; f = files[i]; i++) {
+    var reader = new FileReader();
+    reader.onload = (function(theFile) {
+      return function(e) {
+        // var text = e.target.result;
+        var filelines = e.target.result.split("\n");
+        var titlecell = filelines[0];
+        console.log("loaded file:", titlecell);
+
+        for(var li = 1; li < filelines.length; li++){
+          var splitline = filelines[li].split(",");
+					if(splitline.length <= 1) continue
+
+					var tmp_node_s = splitline[0].trim()
+					var tmp_node_t = splitline[1].trim()
+
+					// console.log(splitline)
+
+
+					var flag = true
+					cy.nodes().forEach(function(ele){
+					  if(tmp_node_s == ele.id()){
+							flag = false;							// console.log("found duplicate", tmp_node_s)
+						}
+					});
+					if(flag) {
+						cy.add({group: 'nodes', data: {id: tmp_node_s}})						// console.log("added", tmp_node_s)
+					}
+
+					var flag = true
+					cy.nodes().forEach(function(ele){
+					  if(tmp_node_t == ele.id()){
+							flag = false;							// console.log("found duplicate", tmp_node_t)
+						}
+					});
+					if(flag) {
+						cy.add({group: 'nodes', data: {id: tmp_node_t}})						// console.log("added", tmp_node_t)
+					}
+
+					var flag = true
+					var duplicate_route_count = 0
+					cy.edges().forEach(function(ele){
+					  if(tmp_node_s+"->"+tmp_node_t == ele.id()){
+							flag = false;
+							duplicate_route_count += 1
+						}
+					});
+					if(flag) {
+						cy.add({group: 'edges',	data: {id: tmp_node_s+"->"+tmp_node_t, source: tmp_node_s, target: tmp_node_t}})
+					}
+
+					console.log("duplicate_route_count", duplicate_route_count)
+
+
+				}
+				// redraw graph picture
+				var layout = cy.layout({name: 'cose'})
+				layout.run()
+
+      };
+
+    })(f);
+    reader.readAsText(f);
+  }
+
+}
+
+</script>
+</html>
