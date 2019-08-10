@@ -29,96 +29,174 @@ function guiChange(){
 }
 
 
-var cellsize = 100;
+var cellsize = 50;
 var gazous = [];
 var gazoucnt = 0;
+
+// kmeans
+var knum = 10;
+var kloop = 10;
 
 // gui
 var gui;
 var guivisible = true;
 
-var cellshape = ["triangle", "rectangle", "circle"];
+var cellshape = ["box", "rectangle", "triangle", "circle", "analyze", ];
 
+var hsvselect = ["hue", "saturation", "value"]
+
+var countcolorflag = true;
+var orgsize = 100;
 
 function setup() {
   // Setting up p5js canvas
-  var can = createCanvas(windowWidth, windowHeight);
+  var can = createCanvas(windowWidth, windowHeight*0.95, WEBGL);
   can.parent("p5canvas");
-  background(127);
 
   // for GUI
   gui = createGui("MATZTRI");
   gui.addGlobals(
-    "cellsize", "cellshape"
-    );
+    "cellsize", "cellshape", "hsvselect", "knum", "kloop", "countcolorflag", "orgsize"
+  );
 
   // load sample image.
-  gazous.push(loadImage("./resources/sample.jpg"));
+  // gazous.push(loadImage("./resources/sample.jpg"));
+  gazous.push(loadImage("http://matztada.github.io/other/triangles/resources/sample.jpg"));
+}
+
+function getColorFromImage(_tmpimg, _x, _y, _w, _h){
+  var tmpiro = _tmpimg.get(
+    map(_x, 0, _w, 0, _tmpimg.width),
+    map(_y, 0, _h, 0, _tmpimg.height)
+    );
+  return color(red(tmpiro), green(tmpiro), blue(tmpiro))
 }
 
 function draw() {
   background(127);
 
-  var tmpbaseimg;
-  if(gazous.length > 0){ // deside color
-    var tmpbaseimg = gazous[gazous.length - 1];
-  }
-  if(gazous.length > 0){ // deside color
-    var tmpbaseimg = gazous[gazous.length - 1];
+  // --- for 3D visualize
+  orbitControl()
 
-    if(cellshape == "rectangle" || cellshape == "circle"){
-      for (var tmpy = 0; tmpy < height; tmpy+=cellsize) {
-        for (var tmpx = 0; tmpx < width; tmpx+=cellsize) {
-          var tmpiro;
-          tmpiro = tmpbaseimg.get(
-            map(tmpx, 0, width, 0, tmpbaseimg.width),
-            map(tmpy, 0, height, 0, tmpbaseimg.height)
-            );
-          tmpiro = color(red(tmpiro), green(tmpiro), blue(tmpiro));
-          noStroke();
-          fill(tmpiro);
-          if(cellshape == "rectangle") rect(tmpx, tmpy, cellsize, cellsize);
-          else if(cellshape == "circle") ellipse(tmpx, tmpy, cellsize, cellsize);
-        }
-      }
-    }else if(cellshape == "triangle"){
-      // for Triangle
-      var toggle = true;
-      for (var tmpy = 0; tmpy < height; tmpy+= sqrt(3)*cellsize/2) {
-        toggle = !toggle;
-        var tmpx = -1*cellsize;
-        if(toggle) tmpx += 0.5*cellsize;
-        for (; tmpx < width; tmpx+=cellsize) {
-          var p1 = createVector(tmpx, tmpy);
-          var p2 = createVector(tmpx + cellsize, tmpy);
-          var p3 = createVector(tmpx + 0.5*cellsize, tmpy + sqrt(3)*cellsize/2);
-          var p4 = createVector(tmpx + 1.5*cellsize, tmpy + sqrt(3)*cellsize/2);
-          var c1 = createVector((p1.x+p2.x+p3.x)/3, (p1.y+p2.y+p3.y)/3)
-          var c2 = createVector((p4.x+p2.x+p3.x)/3, (p4.y+p2.y+p3.y)/3)
+  // --- for coloring process
+  var tmpbaseimg = gazous[gazous.length - 1]; // get last data
 
-          var tmpiro;
-          tmpiro = tmpbaseimg.get(
-            map(c1.x, 0, width, 0, tmpbaseimg.width),
-            map(c1.y, 0, height, 0, tmpbaseimg.height)
-            );
-          tmpiro = color(red(tmpiro), green(tmpiro), blue(tmpiro));
-          noStroke();
-          fill(tmpiro);
-          drawTriangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
-
-          tmpiro = tmpbaseimg.get(
-            map(c2.x, 0, width, 0, tmpbaseimg.width),
-            map(c2.y, 0, height, 0, tmpbaseimg.height)
-            );
-          tmpiro = color(red(tmpiro), green(tmpiro), blue(tmpiro));
-          noStroke();
-          fill(tmpiro);
-          drawTriangle(p4.x, p4.y, p2.x, p2.y, p3.x, p3.y);
-        }
+  if(cellshape == "rectangle" || cellshape == "circle"){
+    translate(-width/2, -height/2, 0);
+    for (var tmpy = 0; tmpy < height; tmpy+=cellsize) {
+      for (var tmpx = 0; tmpx < width; tmpx+=cellsize) {
+        var tmpiro = getColorFromImage(tmpbaseimg, tmpx, tmpy, width, height);
+        noStroke();
+        fill(tmpiro);
+        if(cellshape == "rectangle") rect(tmpx, tmpy, cellsize, cellsize);
+        else if(cellshape == "circle") ellipse(tmpx, tmpy, cellsize, cellsize);
       }
     }
+  }else if(cellshape == "triangle"){
+    translate(-width/2, -height/2, 0);
+    var toggle = true;
+    for (var tmpy = 0; tmpy < height; tmpy+= sqrt(3)*cellsize/2) {
+      toggle = !toggle;
+      var tmpx = -1*cellsize;
+      if(toggle) tmpx += 0.5*cellsize;
+      for (; tmpx < width; tmpx+=cellsize) {
+        var p1 = createVector(tmpx, tmpy);
+        var p2 = createVector(tmpx + cellsize, tmpy);
+        var p3 = createVector(tmpx + 0.5*cellsize, tmpy + sqrt(3)*cellsize/2);
+        var p4 = createVector(tmpx + 1.5*cellsize, tmpy + sqrt(3)*cellsize/2);
+        var c1 = createVector((p1.x+p2.x+p3.x)/3, (p1.y+p2.y+p3.y)/3)
+        var c2 = createVector((p4.x+p2.x+p3.x)/3, (p4.y+p2.y+p3.y)/3)
+
+        var tmpiro = getColorFromImage(tmpbaseimg, c1.x, c1.y, width, height);
+        noStroke();
+        fill(tmpiro);
+        drawTriangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+
+        var tmpiro = getColorFromImage(tmpbaseimg, c2.x, c2.y, width, height);
+        noStroke();
+        fill(tmpiro);
+        drawTriangle(p4.x, p4.y, p2.x, p2.y, p3.x, p3.y);
+      }
+    }
+  }else if(cellshape == "box"){
+    translate(0, 0, -500);
+    rotateX(radians(30));
+    // rotateZ(radians(210) + frameCount * 0.01);
+    translate(-width/2, -height/2, 0);
+    for (var tmpy = 0; tmpy < height; tmpy+=cellsize) {
+      for (var tmpx = 0; tmpx < width; tmpx+=cellsize) {
+        var tmpiro = getColorFromImage(tmpbaseimg, tmpx, tmpy, width, height);
+
+        fill(tmpiro);
+
+        push();
+
+
+        tmphsv = rgb2hsv([red(tmpiro), green(tmpiro), blue(tmpiro)]);
+
+        // for box shape
+        tmpzmax = 300;
+        switch (hsvselect) {
+          case "hue":
+            tmpz = tmphsv[0] / 360;
+            break;
+          case "saturation":
+            tmpz = tmphsv[1] / 1;
+            break;
+          case "value":
+            tmpz = tmphsv[2] / 1;
+            break;
+        }
+        tmpz = tmpz * tmpzmax;
+
+
+        translate(tmpx, tmpy, tmpz/2);
+        box(cellsize, cellsize, tmpz, 0, 0);
+
+        pop();
+      }
+    }
+  }else if(cellshape == "analyze"){
+    translate(-width/2, -height/2, 0);
+    reductColorByKmeans(tmpbaseimg);
   }
 }
+
+function rgb2hsv ( rgb ) {
+	var r = rgb[0] / 255 ;
+	var g = rgb[1] / 255 ;
+	var b = rgb[2] / 255 ;
+
+	var max = Math.max( r, g, b ) ;
+	var min = Math.min( r, g, b ) ;
+	var diff = max - min ;
+
+	var h = 0 ;
+
+	switch( min ) {
+		case max :
+			h = 0 ;
+		break ;
+
+		case r :
+			h = (60 * ((b - g) / diff)) + 180 ;
+		break ;
+
+		case g :
+			h = (60 * ((r - b) / diff)) + 300 ;
+		break ;
+
+		case b :
+			h = (60 * ((g - r) / diff)) + 60 ;
+		break ;
+	}
+
+	var s = max == 0 ? 0 : diff / max ;
+	var v = max ;
+
+	return [ h, s, v ] ;
+}
+
 
 function drawTriangle(x1, y1, x2, y2, x3, y3){
   beginShape();
@@ -160,6 +238,197 @@ function handleFileSelect(evt) { // image handling function
     })(f);
     reader.readAsDataURL(f);
   }
+}
+
+function reductColorByKmeans(_tmpimg){ // so far count in rect
+  // preparing data
+  var kpoints = [];
+  for (var blocky = 0; blocky < height; blocky+=cellsize) {
+    for (var blockx = 0; blockx < width; blockx+=cellsize) {
+      var tmpiro = getColorFromImage(_tmpimg, blockx, blocky, width, height);
+      kpoints.push({
+        ar: [red(tmpiro), green(tmpiro), blue(tmpiro)],
+      });
+    }
+  }
+
+  var result = kmeans({
+    points: kpoints,
+    dimension: kpoints[0].ar.length,
+    numcluster: knum,
+    numloop: kloop
+  });
+  kpoints = result.points;
+  kcentroids = result.centroids;
+
+  // recoloring
+  for (var blocky = 0; blocky < height; blocky+=cellsize) {
+    for (var blockx = 0; blockx < width; blockx+=cellsize) {
+      noStroke();
+      var loopitr = ceil(blockx/cellsize) + ceil(blocky/cellsize)*ceil(width/cellsize); // use ceil function regarding points prepartion process
+      fill(color(kcentroids[kpoints[loopitr].gr].ar));
+      rect(blockx, blocky, cellsize, cellsize);
+    }
+  }
+
+  if(countcolorflag){
+    // counting org
+    // var orgsize = cellsize * 10;
+    for (var orgy = 0; orgy < height; orgy+=orgsize) {
+      for (var orgx = 0; orgx < width; orgx+=orgsize) {
+
+        var grar = [];
+
+        for (var blocky = orgy; blocky < orgy+orgsize && blocky < height; blocky+=cellsize) {
+          for (var blockx = orgx; blockx < orgx+orgsize && blockx < width; blockx+=cellsize) {
+            var loopitr = ceil(blockx/cellsize) + ceil(blocky/cellsize)*ceil(width/cellsize); // use ceil function regarding points prepartion process
+            var tmpgr = kpoints[loopitr].gr;
+            grar.push(tmpgr);
+          }
+        }
+
+        var grar = grar.filter(function(x, i, self){ // remove redundancy
+          return self.indexOf(x) === i;
+        });
+
+        var numkindinorg = grar.length;
+
+        stroke(127);
+        noFill();
+        rect(orgx, orgy, orgsize, orgsize);
+        fill(127);
+        textAlign(CENTER, CENTER);
+        text(numkindinorg, orgx + orgsize/2, orgy+orgsize/2)
+
+        // console.log(grar.length, ceil(height/orgsize), ceil(width/orgsize));
+      }
+    }
+  }
+}
+
+function kmeans(inputdata){
+  var points = inputdata.points;
+  var numcluster = inputdata.numcluster;
+  var numloop = inputdata.numloop;
+  var dimension = inputdata.dimension;
+  var centroids = [];
+
+  var initialgr = 0;
+  for(tmpp of points){ // put initial group
+    tmpp.gr = initialgr;
+    if(++initialgr >= numcluster) initialgr = 0;
+  }
+
+  // loop start
+  for(var l = 0; l < numloop; l++){
+    // initialize centroids
+    centroids = [];
+    for(var tmpgr = 0; tmpgr < numcluster; tmpgr++){
+      var tmpar = new Array(dimension); // preparing 0 array
+      for(var ai = 0; ai < dimension; ai++) tmpar[ai] = 0;
+      centroids.push({
+        ar: tmpar, // array of centroid
+        gr: tmpgr, // groupd id of centroind
+        size: 0 // the number of points which belongs to this centroid
+      });
+    }
+
+    // update centroid per group = get gravity
+    for(tmpp of points){ // loop of points
+      var tmpgid = tmpp.gr;
+      centroids[tmpgid].size++;
+      for(var ai = 0; ai < dimension; ai++){ // loop of array of the point
+        centroids[tmpgid].ar[ai] += tmpp.ar[ai];
+      }
+    }
+    for(tmpc of centroids){ // loop of centroids
+      for(var ai = 0; ai < dimension; ai++){ // loop of array of the centroid
+        tmpc.ar[ai] /= tmpc.size;
+      }
+    }
+
+    // reasign groupd
+    for(tmpp of points){ // loop of points
+      var tmpdist = getdist(tmpp.ar, centroids[0].ar);
+      for(var ci = 1; ci < centroids.length; ci++){ // loop of centroids
+        if(tmpdist > getdist(tmpp.ar, centroids[ci].ar)){
+          tmpdist = getdist(tmpp.ar, centroids[ci].ar);
+          tmpp.gr = ci;
+        }
+      }
+    }
+  }
+
+  // return data
+  // points, kcentroid,
+  var returndata = {
+    points: points,
+    centroids: centroids,
+    dimension: dimension,
+    numcluster: knum,
+    numloop: numloop
+  };
+
+  return returndata;
+}
+
+function getdist(_ar1, _ar2){
+  if(_ar1.length != _ar2.length) return null;
+  var dist = 0;
+  for(var i = 0; i < _ar1.length; i++){
+    dist += pow(_ar1[i] - _ar2[i], 2);
+  }
+  return sqrt(dist);
+}
+
+function Triangle(_vertices) {
+  this.vertices = _vertices;
+
+  var v1 = this.vertices[0];
+  var v2 = this.vertices[1];
+  var v3 = this.vertices[2];
+  var c = 2 * ((v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x));
+  var x = ((v3.y - v1.y) * (sq(v2.x) - sq(v1.x) + sq(v2.y) - sq(v1.y)) + (v1.y - v2.y) * (sq(v3.x) - sq(v1.x) + sq(v3.y) - sq(v1.y))) / c;
+  var y = ((v1.x - v3.x) * (sq(v2.x) - sq(v1.x) + sq(v2.y) - sq(v1.y)) + (v2.x - v1.x) * (sq(v3.x) - sq(v1.x) + sq(v3.y) - sq(v1.y))) / c;
+  var center = createVector(x, y);
+  var radius = v1.dist(center);
+  this.circumCircle = new Circle(center, radius);
+
+  this.divide = function(v) {
+    var tris = [];
+    for (var i = 0; i < 3; i++) {
+      var j = i == 2? 0: i + 1;
+      tris.push(new Triangle([this.vertices[i], this.vertices[j], v]));
+    }
+    return tris;
+  }
+
+  this.isContain = function(v) {
+    for (var i = 0; i < 3; i++) {
+      if (this.vertices[i] === v) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+}
+
+function Circle(_center, _radius) {
+  this.center = _center;
+  this.radius = _radius;
+
+  this.isInCircle = function(v) {
+    return this.center.dist(v) < this.radius;
+  }
+}
+
+function drawTriangle(x1, y1, x2, y2, x3, y3){
+  beginShape();
+  vertex(x1, y1);
+  vertex(x2, y2);
+  vertex(x3, y3);
+  endShape(CLOSE);
 }
 
 </script>
