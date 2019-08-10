@@ -392,7 +392,6 @@ function Triangle(_vertices) {
   var y = ((v1.x - v3.x) * (sq(v2.x) - sq(v1.x) + sq(v2.y) - sq(v1.y)) + (v2.x - v1.x) * (sq(v3.x) - sq(v1.x) + sq(v3.y) - sq(v1.y))) / c;
   var center = createVector(x, y);
   var radius = v1.dist(center);
-  this.circumCircle = new Circle(center, radius);
 
   this.divide = function(v) {
     var tris = [];
@@ -412,23 +411,6 @@ function Triangle(_vertices) {
     return false;
   }
 
-}
-
-function Circle(_center, _radius) {
-  this.center = _center;
-  this.radius = _radius;
-
-  this.isInCircle = function(v) {
-    return this.center.dist(v) < this.radius;
-  }
-}
-
-function drawTriangle(x1, y1, x2, y2, x3, y3){
-  beginShape();
-  vertex(x1, y1);
-  vertex(x2, y2);
-  vertex(x3, y3);
-  endShape(CLOSE);
 }
 
 </script>
