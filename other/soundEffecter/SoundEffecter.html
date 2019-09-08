@@ -10,6 +10,28 @@
     <!-- <button id="sound_name_btn">modify</button>
     <audio id="sound_name" preload="auto"><source src="./sounds/self-regulation1.mp3" type="audio/mp3"></audio> -->
   </body>
+  <style media="screen">
+    html, body {
+      height: 100%;
+    }
+    .btn-square {
+      width:25%;
+      height:10%;
+      font-size: 150%;
+      display: inline-block;
+      padding: 0.5em 1em;
+      text-decoration: none;
+      background: #668ad8;
+      color: #FFF;
+      border-bottom: solid 4px #627295;
+      border-radius: 3px;
+    }
+    .btn-square:active {
+      -webkit-transform: translateY(4px);
+      transform: translateY(4px);
+      border-bottom: none;
+    }
+  </style>
 
 <script language="javascript" type="text/javascript">
 console.log("JavsScript called!!")
@@ -125,7 +147,7 @@ for (var i = 0; i < soundnames.length; i++) {
 // regisSoundBtn(tmpname);
 
 function regisSoundBtn(_name){
-  $("body").append("<button id=\"" + _name + "_btn\">" + _name + "</button>");
+  $("body").append("<button class=\"btn-square\" id=\"" + _name + "_btn\">" + _name + "</button>");
   $("body").append("<audio id=\"" + _name + "\" preload=\"auto\"><source src=\"./sounds/" + _name + ".mp3\" type=\"audio/mp3\"></audio>");
   var se = $("#"+_name);
   $("#"+_name+"_btn").on("click", function(){se[0].currentTime = 0; se[0].play(); });
