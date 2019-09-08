@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Sound Effecter</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  </head>
+  <body>
+    <!-- buttons will be added by JavaScript -->
+    <!-- <button id="sound_name_btn">modify</button>
+    <audio id="sound_name" preload="auto"><source src="./sounds/self-regulation1.mp3" type="audio/mp3"></audio> -->
+  </body>
+
+<script language="javascript" type="text/javascript">
+console.log("JavsScript called!!")
+
+var soundnames = [
+"amami-nature1",
+"ambulance-siren1",
+"ambulance-siren2",
+"apple1",
+"beamgun-shot1",
+"beamgun3",
+"bicycle-bell1",
+"blink1",
+"bomb1",
+"bowling-pin1",
+"boyon1",
+"boyoyon1",
+"broadcasting-end1",
+"broadcasting-start1",
+"camera-shutter1",
+"cat-cry1",
+"chicken-cry1",
+"clearing1",
+"cork-plug1",
+"correct1",
+"corvus-corone-cry1",
+"corvus-macrorhynchos-cry1",
+"costume-drama1",
+"dog1",
+"drum-roll1",
+"extend1",
+"eye-shine1",
+"fate2",
+"flash2",
+"fly1",
+"glass-break2",
+"gong-played1",
+"gong-played2",
+"gun-reload1",
+"gun1",
+"heavy-machine-gun1",
+"helicopter-pass2",
+"hyoushigi3",
+"hyun1",
+"incorrect1",
+"katana-clash1",
+"katana-clash4",
+"katana-gesture2",
+"katana-slash5",
+"kick-low1",
+"kick-middle1",
+"kira1",
+"machdash1",
+"machinegun1",
+"machinegun2",
+"magic-cure3",
+"magic-cure4",
+"magic-poison2",
+"magic-reflection1",
+"magic-stick1",
+"mens-hajimei1",
+"mens-yeah1",
+"microwave-tin1",
+"minminzemi-cry1",
+"mobile-phone-vibration1",
+"money-drop1",
+"monorail-bell",
+"monster4",
+"patrol-car1",
+"people_people-performance-cheer1",
+"people_people-performance-ee1",
+"people_people-performance-uwaa1",
+"people_people-studio-kyaa1",
+"people_stadium-buzz1",
+"phone-ringtone1",
+"punch-high1",
+"punch-high2",
+"punch-real-swing1",
+"punch-real1",
+"qigong2",
+"question1",
+"roll-finish1",
+"school-chime1",
+"scream-woman1",
+"self-regulation1",
+"shakin1",
+"shine1",
+"ship-big-whistle2",
+"shot1",
+"shrink1",
+"slap1",
+"stupid6",
+"switch1",
+"sword-clash4",
+"sword-drawn1",
+"sword-gesture1",
+"sword-gesture3",
+"sword-slash1",
+"tin1",
+"train-horn2",
+"trumpet1",
+"trumpet2",
+"warning2",
+"whip-attack-2",
+"wind1",
+"zipper1",
+]
+
+for (var i = 0; i < soundnames.length; i++) {
+  regisSoundBtn(soundnames[i]);
+}
+// var tmpname = "self-regulation1";
+// regisSoundBtn(tmpname);
+
+function regisSoundBtn(_name){
+  $("body").append("<button id=\"" + _name + "_btn\">" + _name + "</button>");
+  $("body").append("<audio id=\"" + _name + "\" preload=\"auto\"><source src=\"./sounds/" + _name + ".mp3\" type=\"audio/mp3\"></audio>");
+  var se = $("#"+_name);
+  $("#"+_name+"_btn").on("click", function(){se[0].currentTime = 0; se[0].play(); });
+}
+
+</script>
+</html>
