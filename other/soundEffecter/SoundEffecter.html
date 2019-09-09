@@ -4,42 +4,56 @@
     <meta charset="utf-8">
     <title>Sound Effecter</title>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.9.0/Sortable.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
   </head>
   <body>
     <!-- buttons will be added by JavaScript -->
+    <div id="listWithHandle" class="list-group">
+    </div>
+
+    <div id="soundsData">
+    </div>
+
     <!-- <button id="sound_name_btn">modify</button>
     <audio id="sound_name" preload="auto"><source src="./sounds/self-regulation1.mp3" type="audio/mp3"></audio> -->
   </body>
   <style media="screen">
     html {
       touch-action: manipulation;
-    } 
-    html, body {
+    }
+    html, body, div {
       height: 100%;
     }
-    .btn-square {
-      width:25%;
-      height:10%;
-      font-size: 150%;
+    .list-group-item{
+      width:33.3%;
+      /* height:20%; */
+    }
+    .icon-move{
+      width:10%;
+      /* height:20%; */
+      font-size: 90%;
       display: inline-block;
-      padding: 0.5em 1em;
+    }
+    .btn-square {
+      width:23%;
+      height:20%;
+      font-size: 90%;
+      display: inline-block;
       text-decoration: none;
-      background: #668ad8;
-      color: #FFF;
-      border-bottom: solid 4px #627295;
-      border-radius: 3px;
     }
     .btn-square:active {
       -webkit-transform: translateY(4px);
       transform: translateY(4px);
-      border-bottom: none;
     }
   </style>
 
 <script language="javascript" type="text/javascript">
 console.log("JavsScript called!!")
 
-var soundnames = [
+var page;
+var sort_table;
+var table = [
 "amami-nature1",
 "ambulance-siren1",
 "ambulance-siren2",
@@ -143,18 +157,66 @@ var soundnames = [
 "zipper1",
 ]
 
-for (var i = 0; i < soundnames.length; i++) {
-  regisSoundBtn(soundnames[i]);
-}
-// var tmpname = "self-regulation1";
-// regisSoundBtn(tmpname);
+function getTable() {
+  $.cookie.json = true;
+  page = $.cookie('page.page01');
 
-function regisSoundBtn(_name){
-  $("body").append("<button class=\"btn-square\" id=\"" + _name + "_btn\">" + _name + "</button>");
-  $("body").append("<audio id=\"" + _name + "\" preload=\"auto\"><source src=\"./sounds/" + _name + ".mp3\" type=\"audio/mp3\"></audio>");
-  var se = $("#"+_name);
-  $("#"+_name+"_btn").on("click", function(){se[0].currentTime = 0; se[0].play(); });
+  var sort_table;
+  if(page !== undefined) {
+    sort_table = page;
+  } else {
+    sort_table = table;
+  }
+
+  return sort_table;
 }
+
+function createHtml(_name) {
+  var returnStr = ""
+    + '<span class="wrap list-group-item" data-name="' + _name + '">'
+      + '<span class="icon-move" aria-hidden="true">'
+        + '#'
+      + '</span>'
+      + "<button class=\"btn-square\" id=\"" + _name + "_btn\">"
+        + _name.substr(0, 5) + "" + _name.substr(-5, _name.length-1)
+      + "</button>"
+    + '</span>';
+  return returnStr;
+}
+
+// initialize
+
+sort_table = getTable();
+
+for (i = 0; i < sort_table.length; i++) {
+  $('#listWithHandle').append(createHtml(sort_table[i]));
+  $("#soundsData").append("<audio id=\"" + sort_table[i] + "_sound\" preload=\"auto\"><source src=\"./sounds/" + sort_table[i] + ".mp3\" type=\"audio/mp3\"></audio>");
+}
+
+Sortable.create(listWithHandle, {
+  handle: '.icon-move',
+  animation: 150,
+  onUpdate: function (e) {
+    var box = [];
+    $('.wrap').each(function(index, element){
+      box.push($(element).data('name'));
+    });
+    $.cookie('page.page01', box);
+  },
+});
+
+function regisBtn(_name){
+  var se = $("#"+ _name +"_sound");
+  $("#" + _name +"_btn").on("click", function(){
+    se[0].currentTime = 0;
+    se[0].play();
+  });
+}
+
+for (i = 0; i < sort_table.length; i++) {
+  regisBtn(sort_table[i]);
+}
+
 
 </script>
 </html>
