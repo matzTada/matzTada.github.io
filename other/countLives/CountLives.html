@@ -1,0 +1,80 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.js"></script>
+  <style>
+    body {padding: 0; margin: 0;} /* to avoid to show scroll bars*/
+    canvas {display: block;}  /* to avoid to show scroll bars*/
+  </style>
+</head>
+<body>
+
+<script language="javascript" type="text/javascript">
+
+var sqrs = [];
+var cellsize = 50;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  background(0);
+
+  for(var i = 0; i < 500; i++){
+    sqrs.push(new Sqrs({
+      order: i,
+      w: cellsize,
+      h: cellsize,
+      num: floor(10*random(0,1)),
+      cycle: (5 + floor(50*random(0,1))),
+    }));
+  }
+
+}
+
+function draw() {
+  background(0);
+
+  for(var i = 0; i < sqrs.length; i++){
+    sqrs[i].update(cellsize);
+    sqrs[i].display();
+  }
+}
+
+function windowResized(){
+  resizeCanvas(windowWidth, windowHeight);
+}
+
+function Sqrs(_param){
+  this.order = _param.order;
+  this.x = 0;
+  this.y = 0;
+  this.w = _param.w;
+  this.h = _param.h;
+  this.num = _param.num;
+  this.cycle = _param.cycle;
+
+  this.update = function(_cellsize){
+    this.x = _cellsize * floor(this.order%floor(windowWidth/_cellsize));
+    this.y = _cellsize * floor(this.order/floor(windowWidth/_cellsize));
+    if(frameCount%this.cycle == 0){
+      this.num += 1;
+      if(this.num >= 11){
+        this.num = 0;
+      }
+    }
+  }
+
+  this.display = function(){
+    fill(0);
+    rect(this.x, this.y, this.w, this.h);
+    if(this.num == 10) return;
+    fill(0,255,0);
+    textSize(this.h);
+    textAlign(CENTER, CENTER);
+    text(this.num, this.x + 0.5*this.w, this.y + 0.5*this.h);
+  }
+};
+
+</script>
+
+</body>
+</html>
