@@ -7,11 +7,11 @@ inFileName = "../index_seed.html"
 outFileName = "../index.html"
 
 editMode = "insert" # insert OR append OR modify OR clear (BE SUPER CAREFULL)!!
-title = "Triangles"
-img_src = "http://img.youtube.com/vi/-ipP9jfTaEQ/0.jpg" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
+title = "Count Lives"
+img_src = "http://img.youtube.com/vi/LaO1zLrcOi8/0.jpg" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
 img_alt = ""
-link = "https://github.com/matzTada/Triangles" #github.io page "http://matztada.github.io/"
-sentence = "Basic (fundamental) program for Image Processing by JavaScript."
+link = "https://github.com/matzTada/CountLives" #github.io page "http://matztada.github.io/"
+sentence = "Numbers in cells are counted with different cycles."
 style = "style" #style0 for gray window
 
 #initialize colorArray
