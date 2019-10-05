@@ -1,0 +1,142 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.js"></script>
+  <style>
+    body {padding: 0; margin: 0;} /* to avoid to show scroll bars*/
+    canvas {display: block;}  /* to avoid to show scroll bars*/
+  </style>
+</head>
+<body>
+
+<script language="javascript" type="text/javascript">
+
+var lns = [];
+var updateflag = true;
+var nextturnframecount = 150;
+var nextinitframecount = 300;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  colorMode(HSB, 100);
+
+  initialize();
+}
+
+function draw() {
+  // background(0);
+
+  if(updateflag){
+    for(var i = 0; i < lns.length; i++){
+      lns[i].update();
+    }
+  }
+
+  if(frameCount == nextturnframecount){
+    for(var i = 0; i < lns.length; i++) lns[i].turn(360*random(0,1));
+    nextturnframecount = ceil(frameCount + 150 + 300 * random(0,1));
+    console.log("nextturnframecount", nextturnframecount);
+  }
+  if(frameCount == nextinitframecount){
+    initialize();
+    nextinitframecount = ceil(frameCount + 150 + 300 * random(0,1));
+    console.log("nextinitframecount", nextinitframecount);
+  }
+}
+
+function windowResized(){
+  resizeCanvas(windowWidth, windowHeight);
+  initialize();
+}
+
+function keyTyped(){
+  switch(key){
+    case 'r':
+      initialize();
+      break;
+    case 't':
+      for(var i = 0; i < lns.length; i++) lns[i].turn(360*random(0,1));
+      break;
+    case ' ':
+      updateflag = !updateflag;
+      for(var i = 0; i < lns.length; i++){
+        lns[i].extrapolate(1);
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+function initialize(){
+  background(0);
+  lns = createlns(ceil(1+9*random(0,1)));
+}
+
+function createlns(_num){
+  var tmplns = [];
+  var tmpcolor = color(100*random(0,1),100,100);
+  for(var i = 0; i < _num; i++){
+    var tmp = new Lns({
+      order: i,
+    })
+    tmp.initialize({c:tmpcolor});
+    tmplns.push(tmp);
+  }
+  return tmplns;
+}
+
+function Lns(_param){
+  this.order = _param.order;
+  this.x = 0;
+  this.y = 0;
+  this.pastx = 0;
+  this.pasty = 0;
+  this.v = 5;
+  this.degree = 0;
+  this.c = 0;
+
+  this.initialize = function(_var){
+    this.x = windowWidth*random(0,1);
+    this.y = windowHeight*random(0,1);
+    this.degree = 360*random(0,1);
+    this.c = _var.c;
+    this.extrapolate(-1);
+  }
+
+  this.extrapolate = function(_direction){
+    //initial drawing process
+    tmpx = this.x;
+    tmpy = this.y;
+    while(!(tmpx < 0 || tmpx >= windowWidth || tmpy < 0 || tmpy >= windowHeight)){
+      tmpx = tmpx + this.v * _direction * Math.cos(Math.PI/180*(this.degree));
+      tmpy = tmpy + this.v * _direction * Math.sin(Math.PI/180*(this.degree));
+    }
+    stroke(this.c);
+    line(tmpx, tmpy, this.x, this.y);
+  }
+
+  this.turn = function(_degree){
+    this.degree = this.degree + _degree;
+  }
+
+  this.update = function(_cellsize){
+    this.pastx = this.x;
+    this.pasty = this.y;
+    this.x = this.x + this.v * Math.cos(Math.PI/180*this.degree);
+    this.y = this.y + this.v * Math.sin(Math.PI/180*this.degree);
+    if(this.x < 0) this.x = windowWidth;
+    else if(this.x >= windowWidth) this.x = 0;
+    else if(this.y < 0) this.y = windowHeight;
+    else if(this.y >= windowHeight) this.y = 0;
+    else{
+      stroke(this.c);
+      line(this.pastx, this.pasty, this.x, this.y);
+    }
+  }
+};
+
+</script>
+
+</body>
+</html>
