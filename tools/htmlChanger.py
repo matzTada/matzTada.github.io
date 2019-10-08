@@ -7,11 +7,11 @@ inFileName = "../index_seed.html"
 outFileName = "../index.html"
 
 editMode = "insert" # insert OR append OR modify OR clear (BE SUPER CAREFULL)!!
-title = "Line Lives"
-img_src = "http://img.youtube.com/vi/g4iKI5nHmww/0.jpg" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
+title = "Japanese Wordcloud"
+img_src = "https://github.com/matzTada/JapaneseWordcloud/blob/master/resource/picture1.jpg" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
 img_alt = ""
-link = "https://github.com/matzTada/LineLives" #github.io page "http://matztada.github.io/"
-sentence = "Lines run randomly."
+link = "https://github.com/matzTada/JapaneseWordcloud" #github.io page "http://matztada.github.io/"
+sentence = "Simple Japanese Wordcloud with TinySegmenter and amCharts"
 style = "style" #style0 for gray window
 
 #initialize colorArray
