@@ -18,7 +18,7 @@
 </head>
 <body>
 
-<h2>Word cloud after segmented. Input here!</h2>
+<h2>Word cloud after segmented</h2>
 
 <input type="text" id="sampletext" value="">
 <input type="button" id="testButton" value="button">
@@ -26,7 +26,10 @@
 <h3 id="o_input"></h3> -->
 
 <h2>Word cloud after segmented</h2>
-<div id="chartdiv"></div>
+<div id="chartdiv_wordcloud"></div>
+
+<h2>Bar chart after segmented</h2>
+<div id="chartdiv_barchart"></div>
 
 <h2>Segmented input</h2>
 <h3 id="o_segmented"></h3>
@@ -35,42 +38,128 @@
 
 <script language="javascript" type="text/javascript">
 
+var frequentDict = {};
+var frequentArray = [];
+
 $(function () {
   $("#testButton").on("click", function() {
     var getData = $("#sampletext").val(); // get text input data
     $("#o_input").text(getData);
 
     var segmenter = new TinySegmenter(); // make instance
-    var segs = segmenter.segment(getData);  // return array of words
-    var segmentedtextdata = segs.join(" ");
-    $("#o_segmented").text(segmentedtextdata);
+    var segmentedWords = segmenter.segment(getData);  // return array of words
+    $("#o_segmented").text(segmentedWords.join(" "));
 
-    series.text = segmentedtextdata;
+    // create frequentDict
+    frequentDict = {};
+    for (var i = 0; i < segmentedWords.length; i++){
+      frequentDict[segmentedWords[i]] = (frequentDict[segmentedWords[i]] || 0) + 1;
+    }
+
+    // remove non-related words
+    var excludeWords = [
+     "が","の","を","に","へ","と","より","から","にて","して", // 格助詞
+     "ば","とも","ど","ども","が","に","を","て","して","で","つつ","ながら","ものの","ものを","ものから", // 接続助詞
+     "だに","すら","さへ","し","い","のみ","ばかり","など","まで", // 副助詞
+     "は","も","ぞ","なむ","や","か","こそ", // 係助詞
+     "な","な","そ","ばや","なむ","てしがな","に","しが","もがな","かな","か","し", // 終助詞
+     "や","よ","を", // 間投助詞
+     ",", ".", "/", "[", "]", "(", ")", "、", "，", "。", "．", " ", "　",
+    ]
+    for(var i = 0; i < excludeWords.length; i++){
+      if(frequentDict[excludeWords[i]]) delete frequentDict[excludeWords[i]];
+    }
+    console.log("frequentDict:",frequentDict);
+
+    frequentArray = [];
+    frequentArray = Object.entries(frequentDict).map(([key, value]) => ({'key': key, 'value': value}));
+    var sortedFrequentArray = frequentArray.sort(function(a, b) {
+      return (a.value < b.value) ? 1 : -1;
+    });
+    frequentArray = sortedFrequentArray;
+    console.log("frequentArray:",frequentArray);
+
+    // update word cloud
+    // series.text = segmentedtextdata;
+    series_wordcloud.data = frequentArray;
+    series_wordcloud.dataFields.word = "key";
+    series_wordcloud.dataFields.value = "value";
+
+    // update series_barchart
+    chartdiv_barchart.data = frequentArray;
 
   });
 })
 
-var chart = am4core.create("chartdiv", am4plugins_wordCloud.WordCloud);
-var series = chart.series.push(new am4plugins_wordCloud.WordCloudSeries());
+// wordcloud
+var chartdiv_wordcloud = am4core.create("chartdiv_wordcloud", am4plugins_wordCloud.WordCloud);
+var series_wordcloud = chartdiv_wordcloud.series.push(new am4plugins_wordCloud.WordCloudSeries());
+// barchart
+// Create chart instance
+var chartdiv_barchart = am4core.create("chartdiv_barchart", am4charts.XYChart);
 
+// --------------- ready function ------------------
 am4core.ready(function() {
 
 // Themes begin
 am4core.useTheme(am4themes_animated);
 // Themes end
 
-series.accuracy = 4;
-series.step = 15;
-series.rotationThreshold = 0.7;
-series.maxCount = 200;
-series.minWordLength = 2;
-series.labels.template.tooltipText = "{word}: {value}";
-series.fontFamily = "Courier New";
-series.maxFontSize = am4core.percent(30);
-series.colors = new am4core.ColorSet();
-series.colors.passOptions = {};
+// wordcloud
+series_wordcloud.accuracy = 4;
+series_wordcloud.step = 15;
+series_wordcloud.rotationThreshold = 0.7;
+series_wordcloud.maxCount = 100;
+series_wordcloud.minWordLength = 2;
+// series_wordcloud.excludeWords = [];
+series_wordcloud.labels.template.tooltipText = "{word}: {value}";
+series_wordcloud.fontFamily = "Courier New";
+series_wordcloud.maxFontSize = am4core.percent(30);
+series_wordcloud.colors = new am4core.ColorSet();
+series_wordcloud.colors.passOptions = {};
 
-series.text = "Waiting for your ipnut.";
+series_wordcloud.text = "Waiting for your ipnut.";
+
+//barchart
+chartdiv_barchart.scrollbarX = new am4core.Scrollbar();
+var categoryAxis_barchart = chartdiv_barchart.xAxes.push(new am4charts.CategoryAxis());
+categoryAxis_barchart.dataFields.category = "key";
+categoryAxis_barchart.renderer.grid.template.location = 0;
+categoryAxis_barchart.renderer.minGridDistance = 30;
+categoryAxis_barchart.renderer.labels.template.horizontalCenter = "right";
+categoryAxis_barchart.renderer.labels.template.verticalCenter = "middle";
+categoryAxis_barchart.renderer.labels.template.rotation = 270;
+categoryAxis_barchart.tooltip.disabled = true;
+categoryAxis_barchart.renderer.minHeight = 110;
+
+var valueAxis_barchart = chartdiv_barchart.yAxes.push(new am4charts.ValueAxis());
+valueAxis_barchart.renderer.minWidth = 50;
+
+var series_barchart = chartdiv_barchart.series.push(new am4charts.ColumnSeries());
+series_barchart.sequencedInterpolation = true;
+series_barchart.dataFields.valueY = "value";
+series_barchart.dataFields.categoryX = "key";
+series_barchart.tooltipText = "[{categoryX}: bold]{valueY}[/]";
+series_barchart.columns.template.strokeWidth = 0;
+
+series_barchart.tooltip.pointerOrientation = "vertical";
+
+series_barchart.columns.template.column.cornerRadiusTopLeft = 10;
+series_barchart.columns.template.column.cornerRadiusTopRight = 10;
+series_barchart.columns.template.column.fillOpacity = 0.8;
+
+// on hover, make corner radiuses bigger
+var hoverState = series_barchart.columns.template.column.states.create("hover");
+hoverState.properties.cornerRadiusTopLeft = 0;
+hoverState.properties.cornerRadiusTopRight = 0;
+hoverState.properties.fillOpacity = 1;
+
+series_barchart.columns.template.adapter.add("fill", function(fill, target) {
+  return chartdiv_barchart.colors.getIndex(target.dataItem.index);
+});
+
+// Cursor
+chartdiv_barchart.cursor = new am4charts.XYCursor();
 
 }); // end am4core.ready()
 
