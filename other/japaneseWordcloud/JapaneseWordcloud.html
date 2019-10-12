@@ -10,26 +10,45 @@
   <script src="https://www.amcharts.com/lib/4/charts.js"></script>
   <script src="https://www.amcharts.com/lib/4/plugins/wordCloud.js"></script>
   <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+  <script src="https://www.amcharts.com/lib/4/plugins/forceDirected.js"></script>
 
   <style>
-    body {padding: 0; margin: 0;} /* to avoid to show scroll bars*/
-    canvas {display: block;}  /* to avoid to show scroll bars*/
+    body {
+      padding: 0;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    } /* to avoid to show scroll bars*/
+    canvas {
+      display: block;
+    }  /* to avoid to show scroll bars*/
+
+    .chartdiv {
+      display: inline-block;
+      width: 45%;
+      height: 600px;
+    }
+
   </style>
 </head>
 <body>
 
 <h2>Word cloud after segmented</h2>
 
-<input type="text" id="sampletext" value="">
-<input type="button" id="testButton" value="button">
+<form>
+  <textarea id="sampletext"></textarea>
+  <!-- <input type="text" id="sampletext" value=""> -->
+  <input type="button" id="testButton" value="button">
+</form>
 <!-- <h2>Text input</h2>
 <h3 id="o_input"></h3> -->
 
 <h2>Word cloud after segmented</h2>
-<div id="chartdiv_wordcloud"></div>
-
 <h2>Bar chart after segmented</h2>
-<div id="chartdiv_barchart"></div>
+<div id="chartdiv_wordcloud" class="chartdiv"></div>
+<div id="chartdiv_barchart" class="chartdiv"></div>
+
+<h2>Force directed tree for words correlation</h2>
+<div id="chartdiv_forceDirected" ></div>
 
 <h2>Segmented input</h2>
 <h3 id="o_segmented"></h3>
@@ -41,62 +60,132 @@
 var frequentDict = {};
 var frequentArray = [];
 
+/// ----------- for testing reason ----------------------
 $(function () {
+  var initialData = `
+  Here will be input any data.
+  Here will be input any data.
+  Here will be input any data.
+  Here will be input any data.
+  Here will be input any
+  Here will be input
+  Here will be
+  Here will
+  Here
+  `;
+  update(initialData);
+
   $("#testButton").on("click", function() {
-    var getData = $("#sampletext").val(); // get text input data
-    $("#o_input").text(getData);
-
-    var segmenter = new TinySegmenter(); // make instance
-    var segmentedWords = segmenter.segment(getData);  // return array of words
-    $("#o_segmented").text(segmentedWords.join(" "));
-
-    // create frequentDict
-    frequentDict = {};
-    for (var i = 0; i < segmentedWords.length; i++){
-      frequentDict[segmentedWords[i]] = (frequentDict[segmentedWords[i]] || 0) + 1;
-    }
-
-    // remove non-related words
-    var excludeWords = [
-     "が","の","を","に","へ","と","より","から","にて","して", // 格助詞
-     "ば","とも","ど","ども","が","に","を","て","して","で","つつ","ながら","ものの","ものを","ものから", // 接続助詞
-     "だに","すら","さへ","し","い","のみ","ばかり","など","まで", // 副助詞
-     "は","も","ぞ","なむ","や","か","こそ", // 係助詞
-     "な","な","そ","ばや","なむ","てしがな","に","しが","もがな","かな","か","し", // 終助詞
-     "や","よ","を", // 間投助詞
-     ",", ".", "/", "[", "]", "(", ")", "、", "，", "。", "．", " ", "　",
-    ]
-    for(var i = 0; i < excludeWords.length; i++){
-      if(frequentDict[excludeWords[i]]) delete frequentDict[excludeWords[i]];
-    }
-    console.log("frequentDict:",frequentDict);
-
-    frequentArray = [];
-    frequentArray = Object.entries(frequentDict).map(([key, value]) => ({'key': key, 'value': value}));
-    var sortedFrequentArray = frequentArray.sort(function(a, b) {
-      return (a.value < b.value) ? 1 : -1;
-    });
-    frequentArray = sortedFrequentArray;
-    console.log("frequentArray:",frequentArray);
-
-    // update word cloud
-    // series.text = segmentedtextdata;
-    series_wordcloud.data = frequentArray;
-    series_wordcloud.dataFields.word = "key";
-    series_wordcloud.dataFields.value = "value";
-
-    // update series_barchart
-    chartdiv_barchart.data = frequentArray;
+    var inputData = $("#sampletext").val(); // get text input data
+    // $("#o_input").text(getData);
+    update(inputData);
 
   });
 })
 
-// wordcloud
+function update(getData){
+  var segmenter = new TinySegmenter(); // make instance
+
+  var segmentedWords = segmenter.segment(getData);  // return array of words
+  $("#o_segmented").text(segmentedWords.join(" "));
+
+  // create frequentDict
+  frequentDict = {};
+  for (var i = 0; i < segmentedWords.length; i++){
+    frequentDict[segmentedWords[i]] = (frequentDict[segmentedWords[i]] || 0) + 1;
+  }
+
+  // remove non-related words
+  var excludeWords = [
+   "が","の","を","に","へ","と","より","から","にて","して", // 格助詞
+   "ば","とも","ど","ども","が","に","を","て","して","で","つつ","ながら","ものの","ものを","ものから", // 接続助詞
+   "だに","すら","さへ","し","い","のみ","ばかり","など","まで", // 副助詞
+   "は","も","ぞ","なむ","や","か","こそ", // 係助詞
+   "な","な","そ","ばや","なむ","てしがな","に","しが","もがな","かな","か","し", // 終助詞
+   "や","よ","を", // 間投助詞
+   //適当指定
+   "た", "さ", "れ",
+   //記号
+   ",", ".", "/", "[", "]", "(", ")", "､", "、", "，", "。", "．", " ", "  ", "　",
+   ":", ";", "「", "」", "\n", "\n ", "\n\n", "・", "･", "｣", "｢", "）", "（",
+   "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+  ]
+  for(var i = 0; i < excludeWords.length; i++){
+    if(frequentDict[excludeWords[i]]) delete frequentDict[excludeWords[i]];
+  }
+  console.log("frequentDict:",frequentDict);
+
+  // makde frequentDict to frequentArray, and sort it by frequency
+  frequentArray = [];
+  frequentArray = Object.entries(frequentDict).map(([key, value]) => ({'key': key, 'value': value}));
+  frequentArray = frequentArray.sort(function(a, b) {return (a.value < b.value) ? 1 : -1;});
+  console.log("frequentArray:",frequentArray);
+
+  // remove less frequentData
+  var magicNumberAsLessFrequent = 3;
+  for(var i = frequentArray.length-1; i>=0; i--){
+    if(frequentArray[i].value <= magicNumberAsLessFrequent) frequentArray.splice(i,1);
+  }
+
+  // update word cloud
+  // series.text = segmentedtextdata;
+  series_wordcloud.data = frequentArray;
+  series_wordcloud.dataFields.word = "key";
+  series_wordcloud.dataFields.value = "value";
+
+  // update series_barchart
+  chartdiv_barchart.data = frequentArray;
+
+  // basket data analysis
+  var basketLines = getData.split(/\.|\n|\u3002|\uFF0E/).filter(function(e){return e;}); // remove empty dataset
+  console.log("basketLines:", basketLines.length, basketLines);
+  var basketData = [];
+  basketLines.forEach(function(line, index){
+    var words = segmenter.segment(line).filter(function(e){return e;});
+    var sortedJsonArray = frequentArray.filter(function(e){
+      if(words.includes(e.key)) return e;
+    })
+    words = sortedJsonArray.map(function(e){return e.key;})
+    if(words.length > 1) basketData.push(words);
+  });
+  console.log("basketData:", basketData.length, basketData);
+
+  // Set data for forceDirected
+  var seriesToBeSubstituted = [];
+  frequentArray.forEach(function(e, index){
+    seriesToBeSubstituted.push({
+      "name": e.key,
+      "value": e.value,
+      "link": [],
+    });
+  });
+
+  basketData.forEach(function(e_bd, index){
+    for(var i = 0; i < e_bd.length-1; i++){
+      seriesToBeSubstituted.forEach(function(e_s){
+        if(e_s.name == e_bd[i]) e_s.link.push(e_bd[i+1]);
+      });
+    }
+  });
+
+  series_forceDirected.data = seriesToBeSubstituted;
+  // [
+  // {
+  //   "name": "First",
+  //   "value": 1,
+  //   "link": ["Second", "Third"],
+  // },
+  // ];
+} // end: update graphs
+
+// --- wordcloud ---
 var chartdiv_wordcloud = am4core.create("chartdiv_wordcloud", am4plugins_wordCloud.WordCloud);
 var series_wordcloud = chartdiv_wordcloud.series.push(new am4plugins_wordCloud.WordCloudSeries());
-// barchart
-// Create chart instance
-var chartdiv_barchart = am4core.create("chartdiv_barchart", am4charts.XYChart);
+// --- barchart ---
+var chartdiv_barchart = am4core.create("chartdiv_barchart", am4charts.XYChart); // Create chart instance
+// --- directed graph chart
+var chartdiv_forceDirected = am4core.create("chartdiv_forceDirected", am4plugins_forceDirected.ForceDirectedTree);
+var series_forceDirected = chartdiv_forceDirected.series.push(new am4plugins_forceDirected.ForceDirectedSeries())
 
 // --------------- ready function ------------------
 am4core.ready(function() {
@@ -105,7 +194,7 @@ am4core.ready(function() {
 am4core.useTheme(am4themes_animated);
 // Themes end
 
-// wordcloud
+// --- wordcloud --------------------------------------------
 series_wordcloud.accuracy = 4;
 series_wordcloud.step = 15;
 series_wordcloud.rotationThreshold = 0.7;
@@ -120,7 +209,7 @@ series_wordcloud.colors.passOptions = {};
 
 series_wordcloud.text = "Waiting for your ipnut.";
 
-//barchart
+// --- barchart -----------------------------------------------
 chartdiv_barchart.scrollbarX = new am4core.Scrollbar();
 var categoryAxis_barchart = chartdiv_barchart.xAxes.push(new am4charts.CategoryAxis());
 categoryAxis_barchart.dataFields.category = "key";
@@ -160,6 +249,28 @@ series_barchart.columns.template.adapter.add("fill", function(fill, target) {
 
 // Cursor
 chartdiv_barchart.cursor = new am4charts.XYCursor();
+
+// --- forceDirected graph ---------------------
+
+// Set up data fields
+series_forceDirected.dataFields.value = "value";
+series_forceDirected.dataFields.name = "name";
+series_forceDirected.dataFields.children = "children";
+series_forceDirected.dataFields.id = "name";
+series_forceDirected.dataFields.linkWith = "link";
+
+// Add labels
+series_forceDirected.nodes.template.label.text = "{name}";
+series_forceDirected.nodes.template.tooltipText = "{name}: [bold]{value}[/]";
+series_forceDirected.fontSize = 10;
+series_forceDirected.minRadius = 15;
+series_forceDirected.maxRadius = 40;
+
+// configs
+// series_forceDirected.nodes.template.label.hideOversized = true;
+// series_forceDirected.nodes.template.label.truncate = true;
+series_forceDirected.centerStrength = 1.0;
+// series_forceDirected.manyBodyStrength = 0.5;
 
 }); // end am4core.ready()
 
