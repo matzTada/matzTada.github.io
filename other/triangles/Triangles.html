@@ -29,7 +29,7 @@ function guiChange(){
 }
 
 
-var cellsize = 50;
+var cellsize = 85;
 var gazous = [];
 var gazoucnt = 0;
 
@@ -41,12 +41,13 @@ var kloop = 10;
 var gui;
 var guivisible = true;
 
-var cellshape = ["box", "rectangle", "triangle", "circle", "analyze", ];
+var cellshape = ["rectangle", "triangle", "circle", "analyze", "box", ];
 
 var hsvselect = ["hue", "saturation", "value"]
 
 var countcolorflag = true;
 var orgsize = 100;
+var colorstep = 256;
 
 function setup() {
   // Setting up p5js canvas
@@ -56,7 +57,7 @@ function setup() {
   // for GUI
   gui = createGui("MATZTRI");
   gui.addGlobals(
-    "cellsize", "cellshape", "hsvselect", "knum", "kloop", "countcolorflag", "orgsize"
+    "cellsize", "cellshape", "hsvselect", "knum", "kloop", "countcolorflag", "orgsize", "colorstep"
   );
 
   // load sample image.
@@ -72,11 +73,19 @@ function getColorFromImage(_tmpimg, _x, _y, _w, _h){
   return color(red(tmpiro), green(tmpiro), blue(tmpiro))
 }
 
+function reducedColor(_tmpiro, _redstep, _greenstep, _bluestep){
+  return color(
+    map(floor((red(_tmpiro)/255)*(_redstep-1)+0.5), 0, _redstep-1, 0, 255),
+    map(floor((green(_tmpiro)/255)*(_greenstep-1)+0.5), 0, _greenstep-1, 0, 255),
+    map(floor((blue(_tmpiro)/255)*(_bluestep-1)+0.5), 0, _bluestep-1, 0, 255),
+  );
+}
+
 function draw() {
   background(127);
 
   // --- for 3D visualize
-  orbitControl()
+  if(cellshape == "box") orbitControl()
 
   // --- for coloring process
   var tmpbaseimg = gazous[gazous.length - 1]; // get last data
@@ -87,7 +96,7 @@ function draw() {
       for (var tmpx = 0; tmpx < width; tmpx+=cellsize) {
         var tmpiro = getColorFromImage(tmpbaseimg, tmpx, tmpy, width, height);
         noStroke();
-        fill(tmpiro);
+        fill(reducedColor(tmpiro, colorstep, colorstep, colorstep));
         if(cellshape == "rectangle") rect(tmpx, tmpy, cellsize, cellsize);
         else if(cellshape == "circle") ellipse(tmpx, tmpy, cellsize, cellsize);
       }
@@ -109,12 +118,12 @@ function draw() {
 
         var tmpiro = getColorFromImage(tmpbaseimg, c1.x, c1.y, width, height);
         noStroke();
-        fill(tmpiro);
+        fill(reducedColor(tmpiro, colorstep, colorstep, colorstep));
         drawTriangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 
         var tmpiro = getColorFromImage(tmpbaseimg, c2.x, c2.y, width, height);
         noStroke();
-        fill(tmpiro);
+        fill(reducedColor(tmpiro, colorstep, colorstep, colorstep));
         drawTriangle(p4.x, p4.y, p2.x, p2.y, p3.x, p3.y);
       }
     }
