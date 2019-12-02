@@ -28,10 +28,30 @@ function guiChange(){
   else gui.hide();
 }
 
+function keyTyped(){
+  switch (key) {
+    case 't':
+      for(var tmppp of pixelpoints){
+        tmppp.triggerOrigin();
+      }
+      break;
+    case 'r':
+      for(var tmppp of pixelpoints){
+        tmppp.moveflag = true;
+      }
+      break;
+    case 's':
+      for(var tmppp of pixelpoints){
+        tmppp.moveflag = false;
+      }
+      break;
+  }
+}
 
-var cellsize = 85;
+var cellsize = 30;
 var gazous = [];
 var gazoucnt = 0;
+var pixelpoints = [];
 
 // kmeans
 var knum = 10;
@@ -41,13 +61,18 @@ var kloop = 10;
 var gui;
 var guivisible = true;
 
-var cellshape = ["rectangle", "triangle", "circle", "analyze", "box", ];
+var cellshape = ["rectangle", "triangle", "circle", "primary", "pixeldance", "analyze", "box"];
 
 var hsvselect = ["hue", "saturation", "value"]
 
 var countcolorflag = true;
 var orgsize = 100;
 var colorstep = 256;
+
+var pdimg;
+function preload(){
+  pdimg = loadImage("http://matztada.github.io/other/triangles/resources/sample.jpg");
+}
 
 function setup() {
   // Setting up p5js canvas
@@ -63,6 +88,76 @@ function setup() {
   // load sample image.
   // gazous.push(loadImage("./resources/sample.jpg"));
   gazous.push(loadImage("http://matztada.github.io/other/triangles/resources/sample.jpg"));
+
+  // === initial setting for pixel dance ===
+  for (var tmpy = 0; tmpy < height; tmpy+=cellsize) {
+    for (var tmpx = 0; tmpx < width; tmpx+=cellsize) {
+      var tmpcolor = pdimg.get(
+        map(tmpx, 0, width, 0, pdimg.width),
+        map(tmpy, 0, height, 0, pdimg.height)
+        );
+      // console.log(tmpx, tmpy, tmpcolor, red(tmpcolor), green(tmpcolor), blue(tmpcolor));
+      pixelpoints.push(
+        new PixelPoint({
+          x : tmpx,
+          y : tmpy,
+          ox : tmpx,
+          oy : tmpy,
+          c : tmpcolor,
+          v : 3,
+          a : 360*random(0,1),
+          size : cellsize,
+      }));
+    }
+  }
+}
+
+function PixelPoint(_param){
+  this.x = _param.x;
+  this.y = _param.y;
+  this.ox = _param.ox; // original x
+  this.oy = _param.oy; // original y
+  this.c = _param.c;
+  this.moveflag = true;
+  this.v = _param.v;
+  this.a = _param.a;
+  this.size = _param.size;
+  this.hasTarget = false;
+  this.tx = this.ox;
+  this.ty = this.oy;
+
+  this.update = function(){
+    if(this.moveflag && this.hasTarget){
+      this.x += this.v * (this.tx - this.x) / dist(this.tx, this.ty, this.x, this.y);
+      this.y += this.v * (this.ty - this.y) / dist(this.ty, this.ty, this.y, this.y);
+      if(dist(this.tx, this.ty, this.x, this.y) <= this.v){
+        this.x = this.tx;
+        this.y = this.ty;
+        this.hasTarget = false;
+        this.moveflag = false;
+      }
+    }else if(this.moveflag){
+      var nextx = this.x + this.v * cos(radians(this.a));
+      if(nextx < 0|| nextx >= width) this.a = 180 - this.a;
+      this.x += this.v * cos(radians(this.a));
+
+      var nexty = this.y + this.v * sin(radians(this.a));
+      if(nexty < 0|| nexty >= height) this.a = - this.a;
+      this.y += this.v * sin(radians(this.a));
+    }
+  }
+
+  this.triggerOrigin = function(){
+    this.hasTarget = true;
+    this.tx = this.ox;
+    this.ty = this.oy;
+  }
+
+  this.display = function(){
+    noStroke();
+    fill(this.c);
+    ellipse(this.x, this.y, this.size, this.size);
+  }
 }
 
 function getColorFromImage(_tmpimg, _x, _y, _w, _h){
@@ -83,9 +178,6 @@ function reducedColor(_tmpiro, _redstep, _greenstep, _bluestep){
 
 function draw() {
   background(127);
-
-  // --- for 3D visualize
-  if(cellshape == "box") orbitControl()
 
   // --- for coloring process
   var tmpbaseimg = gazous[gazous.length - 1]; // get last data
@@ -128,6 +220,8 @@ function draw() {
       }
     }
   }else if(cellshape == "box"){
+    orbitControl()
+
     translate(0, 0, -500);
     rotateX(radians(30));
     // rotateZ(radians(210) + frameCount * 0.01);
@@ -168,6 +262,61 @@ function draw() {
   }else if(cellshape == "analyze"){
     translate(-width/2, -height/2, 0);
     reductColorByKmeans(tmpbaseimg);
+  }else if(cellshape == "pixeldance"){
+    translate(-width/2, -height/2, 0);
+    for(var tmppp of pixelpoints){
+      tmppp.update();
+      tmppp.display();
+    }
+  }else if(cellshape == "primary"){
+    background(0);
+    orbitControl()
+
+    push()
+
+    rotateZ(radians(-90));
+    rotateY(radians(-30));
+    rotateX(radians(-30));
+    // translate(-width/2, -height/2, 0);
+
+    translate(-250, -250, -250);
+
+    stroke(255, 0, 0);
+    line(  0,   0,   0, 500,   0,   0);
+    line(  0, 500,   0, 500, 500,   0);
+    line(  0,   0, 500, 500,   0, 500);
+    line(  0, 500, 500, 500, 500, 500);
+    stroke(0, 255, 0);
+    line(  0,   0,   0,   0, 500,   0);
+    line(500,   0,   0, 500, 500,   0);
+    line(  0,   0, 500,   0, 500, 500);
+    line(500,   0, 500, 500, 500, 500);
+    stroke(0, 0, 255);
+    line(  0,   0,   0,   0,   0, 500);
+    line(500,   0,   0, 500,   0, 500);
+    line(  0, 500,   0,   0, 500, 500);
+    line(500, 500,   0, 500, 500, 500);
+
+
+    for (var tmpy = 0; tmpy < height; tmpy+=cellsize) {
+      for (var tmpx = 0; tmpx < width; tmpx+=cellsize) {
+        var tmpiro = getColorFromImage(tmpbaseimg, tmpx, tmpy, width, height);
+
+        noStroke();
+        fill(tmpiro);
+        push();
+        translate(
+          map(red(tmpiro), 0, 255, 0, 500),
+          map(green(tmpiro), 0, 255, 0, 500),
+          map(blue(tmpiro), 0, 255, 0, 500),
+        );
+        sphere(max(1, cellsize/5));
+        pop();
+      }
+    }
+
+    pop();
+
   }
 }
 
