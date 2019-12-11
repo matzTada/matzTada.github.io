@@ -61,7 +61,7 @@ var kloop = 10;
 var gui;
 var guivisible = true;
 
-var cellshape = ["rectangle", "triangle", "circle", "primary", "pixeldance", "analyze", "box"];
+var cellshape = ["rectangle", "triangle", "circle", "primary", "donut", "pixeldance", "analyze", "box"];
 
 var hsvselect = ["hue", "saturation", "value"]
 
@@ -310,6 +310,41 @@ function draw() {
           map(green(tmpiro), 0, 255, 0, 500),
           map(blue(tmpiro), 0, 255, 0, 500),
         );
+        sphere(max(1, cellsize/5));
+        pop();
+      }
+    }
+
+    pop();
+
+  }else if(cellshape == "donut"){
+    background(0);
+    orbitControl();
+
+    push();
+
+    rotateZ(radians(-90));
+    rotateY(radians(-30));
+    rotateX(radians(-30));
+
+    // stroke(127);
+    // noFill();
+    // ellipse(0, 0, min(width,height)/16, min(width,height)/16);
+    // ellipse(0, 0, min(width,height)/4, min(width,height)/4);
+
+    for (var tmpy = 0; tmpy < height; tmpy+=cellsize) {
+      for (var tmpx = 0; tmpx < width; tmpx+=cellsize) {
+        var tmpiro = getColorFromImage(tmpbaseimg, tmpx, tmpy, width, height);
+
+        noStroke();
+        fill(tmpiro);
+        push();
+        translate(
+          map(saturation(tmpiro), 0, 100, min(width,height)/16, min(width,height)/4)*cos(radians(hue(tmpiro))),
+          map(saturation(tmpiro), 0, 100, min(width,height)/16, min(width,height)/4)*sin(radians(hue(tmpiro))),
+          map(lightness(tmpiro), 0, 100, -min(width,height)/2, 0)
+        );
+
         sphere(max(1, cellsize/5));
         pop();
       }
