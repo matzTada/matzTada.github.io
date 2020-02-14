@@ -9,111 +9,168 @@
 </head>
 <body>
   <div id="p5canvas"></div>
+  <input type="file" id="fileaddbutton" name="files[]" multiple />
 </body>
 
 <script language="javascript" type="text/javascript">
 
-var pts = [];
-var cellsize = 20;
+document.getElementById('fileaddbutton').addEventListener('change', handleFileSelect, false);
 
-var MARGIN = 0; // for Delaunoy Triangle
+
+var pts = [];
+var cellsize = 40;
+
+var gazous = [];
+var gazoucnt = 0;
+
+var indmtx;
 
 function setup() {
+  // --- p5 js initialize start ---
   var can = createCanvas(windowWidth, windowHeight);
   can.parent("p5canvas");
+  // --- p5 js initialize end ---
+
   background(127);
+
+  // // four corners
+  // pts.push(new Particle({ x: 0, y: 0, vx: 0, vy: 0, r: 1, area: 0}));
+  // pts.push(new Particle({ x: 0, y: height-1, vx: 0, vy: 0, r: 1, area: 0}));
+  // pts.push(new Particle({ x: width-1, y: 0, vx: 0, vy: 0, r: 1, area: 0}));
+  // pts.push(new Particle({ x: width-1, y: height-1, vx: 0, vy: 0, r: 1, area: 0}));
 
   for (var i = 0; i < 100; i++) {
     pts.push(new Particle({
       x: random(0, width),
       y: random(0, height),
-      vx: random(0, 2),
-      vy: random(0, 2),
-      r: 5,
-      area: cellsize*4
+      vx: random(0.5, 2) * (random(0,1) > 0.5 ? 1 : -1),
+      vy: random(0.5, 2) * (random(0,1) > 0.5 ? 1 : -1),
+      r: random(5, 20),
+      area: 80
     })
     );
   }
+
+  // setup IndicatorMatrix
+  indmtx = new IndicatorMatrix({cellsize: cellsize});
+  indmtx.initialize();
+
 }
 
 function draw() {
-  cellsize = width/20;
+  background(0);
 
-  var exmatx = ceil(width/cellsize);
-  var exmaty = ceil(height/cellsize);
+  indmtx.update(pts);
+  indmtx.show();
 
-  var exmat = new Array(exmaty);
-  for(let y = 0; y < exmaty; y++){
-    exmat[y] = new Array(exmatx).fill(0);
-  }
-
-  for (var y = 0; y < exmaty; y++) {
-    for (var x = 0; x < exmatx; x++) {
-      for(var tmppt of pts){
-        if(x*cellsize < tmppt.x && tmppt.x < (x+1)*cellsize && y*cellsize < tmppt.y && tmppt.y < (y+1)*cellsize ){
-          exmat[y][x] = 1;
-        }
-      }
-    }
+  for(var tmppt of pts){
+    tmppt.move(indmtx.exmat, cellsize);
   }
 
   for(var tmppt of pts){
-    tmppt.move(exmat);
+    tmppt.checkNeighbor(pts);
   }
 
-  background(0);
-
-  stroke(127);
-  for (var y = 0; y < exmaty; y++) {
-    for (var x = 0; x < exmatx; x++) {
-      if(exmat[y][x]==1){
-        fill(32);
-        rect(x*cellsize, y*cellsize, cellsize, cellsize);
-      }else if(exmat[y][x]==2){
-        fill(32, 0, 0);
-        rect(x*cellsize, y*cellsize, cellsize, cellsize);
-      }
-    }
-  }
-
+  // display particles
   for(var tmppt of pts){
     tmppt.show(pts);
   }
 
-  // display neighbor relation
-  stroke(0, 127, 0);
-  for(var tmppt2 of pts){
-    for(var tmppt1 of pts){
-      if(dist(tmppt2.x, tmppt2.y, tmppt1.x, tmppt1.y) < tmppt2.area/2){
-        line(tmppt2.x, tmppt2.y, tmppt1.x, tmppt1.y);
+  // --- Delaunay traiangle drawing start ---
+  getDelaunayTriangle(pts);
+  // --- Delaunay traiangle drawing end ---
+
+  // --- display functions end ---
+
+}
+
+function IndicatorMatrix(_param){
+  this.cellsize = _param.cellsize;
+  this.exmat;
+
+  this.initialize = function(){
+    // initialize matrix = exmat[mat_y][mat_x] with 0
+    var exmat = [];
+    for(var j = 0; j < floor(height/this.cellsize)+1; j++){
+      var tmp = [];
+      for(var i = 0; i < floor(width/this.cellsize)+1; i++){
+        tmp.push(0);
+      }
+      exmat.push(tmp);
+    }
+
+    this.exmat = exmat;
+  }
+
+  this.update = function(_pts){
+    // update matrix by current point positions
+    _pts.forEach((item, i) => {
+      var tmp_pos_x = floor(item.x/this.cellsize);
+      var tmp_pos_y = floor(item.y/this.cellsize);
+      if(tmp_pos_y < this.exmat.length && tmp_pos_x < this.exmat[0].length ){
+        this.exmat[tmp_pos_y][tmp_pos_x] += 1;
+      }
+    });
+  }
+
+  this.show = function(){
+    // get max value in matrix
+    var maxvalue = Math.max(...indmtx.exmat.map(function(tmp){return Math.max(...tmp)}));
+    var minvalue = Math.min(...indmtx.exmat.map(function(tmp){return Math.min(...tmp)}));
+
+    // fillout particle exists or congested place
+    stroke(63);
+    for (var y = 0; y < this.exmat.length ; y++) {
+      for (var x = 0; x < this.exmat[0].length; x++) {
+        if(this.exmat[y][x]==1) {
+          fill(32, 32, 0);
+        }else if(this.exmat[y][x]>=2){
+          fill(map(this.exmat[y][x], minvalue, maxvalue, 0, 255), 0, 0);
+        }else{
+          noFill();
+        }
+        rect(x*this.cellsize, y*this.cellsize, this.cellsize, this.cellsize);
       }
     }
   }
 
-  // Delaunay traiangle drawing
-  // translation from pts to vts
-  var vts = [];
-  for (var i = 0; i < pts.length; i++) {
-    var v = createVector(pts[i].x, pts[i].y);
-    vts.push(v);
-  }
+}
 
+function getDelaunayTriangle(_pts){
   var delaunayTriangulation = new DelaunayTriangulation();
-  for (var i = 0; i < vts.length; i++) {
-    delaunayTriangulation.add(vts[i]);
-  }
+
+  _pts.forEach((item, i) => {
+    delaunayTriangulation.add(new createVector(item.x, item.y));
+  });
+
   var triangles = delaunayTriangulation.getTriangles();
 
-  stroke(127, 127, 0);
   // drawing
-  for (var ti = 0; ti < triangles.length; ti++) {
-    var t = triangles[ti];
-    drawTriangle(
-      t.vertices[0].x, t.vertices[0].y,
-      t.vertices[1].x, t.vertices[1].y,
-      t.vertices[2].x, t.vertices[2].y);
-  }
+  triangles.forEach((item, i) => {
+    // deside color
+    stroke(0, 255, 0);
 
+    if(gazous.length > 0){
+      var tmpbaseimg = gazous[gazous.length - 1];
+
+      var tmpx = (item.vertices[0].x + item.vertices[1].x + item.vertices[2].x)/3; // center of gravity
+      var tmpy = (item.vertices[0].y + item.vertices[1].y + item.vertices[2].y)/3; // center of gravity
+
+      var tmpiro = tmpbaseimg.get(
+        map(tmpx, 0, width, 0, tmpbaseimg.width),
+        map(tmpy, 0, height, 0, tmpbaseimg.height)
+        );
+      tmpiro = color(red(tmpiro), green(tmpiro), blue(tmpiro));
+      fill(tmpiro);
+    }else{
+      noFill();
+    }
+
+    drawTriangle(
+      item.vertices[0].x, item.vertices[0].y,
+      item.vertices[1].x, item.vertices[1].y,
+      item.vertices[2].x, item.vertices[2].y);
+  });
 }
 
 function Particle(param){
@@ -124,48 +181,52 @@ function Particle(param){
   this.r = param.r;
   this.area = param.area;
 
-  this.move = function(_exmat){
+  this.checkNeighbor = function(_pts){
+    // display neighbor relation
+    stroke(127, 127, 0);
+    _pts.forEach((item, i) => {
+      if(dist(this.x, this.y, item.x, item.y) < this.area){
+        line(this.x, this.y, item.x, item.y);
+      }
+    });
+  }
 
-    // get next cell
+  this.move = function(_exmat, _cellsize){
     var nextx = this.x + this.vx;
     var nexty = this.y + this.vy;
-    if(nextx < 0) nextx = width - nextx;
+    // roll back the world if the partcile reaches the edge of space
+    if(nextx < 0) nextx = nextx + width;
     else if(width <= nextx) nextx = nextx - width;
-    if(nexty < 0) nexty = height - nexty;
+    if(nexty < 0) nexty = nexty + height;
     else if(height <= nexty) nexty = nexty - height;
 
-    var nextnumx = floor(nextx/cellsize);
-    var nextnumy = floor(nexty/cellsize);
+    // --- check next cell congested? start ---
+    // var nextnumx = floor(nextx/_cellsize);
+    // var nextnumy = floor(nexty/_cellsize);
+    // if((nextnumx != floor(this.x/_cellsize) || nextnumy != floor(this.y/_cellsize))
+    //   && (_exmat[nextnumy][nextnumx] >= 1)){ // collision detection
+    //     console.log("detect: ", this.x, this.y);
+    // }
+    // --- check next cell congested? end ---
 
-    var numx = floor(this.x/cellsize);
-    var numy = floor(this.y/cellsize);
-
-    if((nextnumx != numx || nextnumy != numy) && (_exmat[nextnumy][nextnumx] == 1 || _exmat[nextnumy][nextnumx] == 2)){
-      _exmat[numy][numx] = 2;
-    }else{
-      this.x += this.vx;
-      this.y += this.vy;
-      if(this.x < 0) this.x = width;
-      else if(width <= this.x) this.x = 0;
-      if(this.y < 0) this.y = height;
-      else if(height <= this.y) this.y = 0;
-    }
+    // update position
+    this.x = nextx;
+    this.y = nexty;
   }
 
   this.show = function(_pts){
-    stroke(255);
-    noFill();
+    stroke(255, 127);
+    fill(255, 127);
     ellipse(this.x, this.y, this.r, this.r);
 
     // show direction
     stroke(255);
-    noFill();
-    line(this.x, this.y, this.x + this.vx*10, this.y + this.vy*10);
+    line(this.x, this.y, this.x + this.r*this.vx, this.y + this.r*this.vy);
 
     // // display area
     // stroke(127);
     // noFill();
-    // ellipse(this.x, this.y, this.area, this.area);
+    // ellipse(this.x, this.y, this.area*2, this.area*2);
   }
 
 }
@@ -311,6 +372,40 @@ function drawTriangle(x1, y1, x2, y2, x3, y3){
   vertex(x2, y2);
   vertex(x3, y3);
   endShape(CLOSE);
+}
+
+function handleFileSelect(evt) { // image handling function
+  var files = evt.target.files;
+  for (var i = 0, f; f = files[i]; i++) {
+    if (!f.type.match('image.*')) continue;
+    var reader = new FileReader();
+    reader.onload = (function(theFile) {
+      return function(e) {
+        // var tmpreadimg = loadImage(e.target.result); // get image
+        // gazous.push(tmpreadimg);
+
+        var image = new Image(); // compress image
+        var tmpcanvas = document.createElement("canvas");
+        var ctx = tmpcanvas.getContext("2d");
+        image.onload = function(event){
+          var tmpw = 300, tmph = 300;
+          if(image.height < image.width){
+            tmph = tmpw*image.height/image.width;
+          }else{
+            tmpw = tmph*image.width/image.height;
+          }
+
+          tmpcanvas.width = tmpw;
+          tmpcanvas.height = tmph;
+          ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, tmpw, tmph);
+          var canvasImageURL = tmpcanvas.toDataURL();
+          gazous.push(loadImage(canvasImageURL));
+        };
+        image.src = e.target.result;
+      };
+    })(f);
+    reader.readAsDataURL(f);
+  }
 }
 
 </script>
