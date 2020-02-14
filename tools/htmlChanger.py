@@ -6,13 +6,13 @@
 inFileName = "../index_seed.html"
 outFileName = "../index.html"
 
-editMode = "insert" # insert OR append OR modify OR clear (BE SUPER CAREFULL)!!
-title = "Japanese Wordcloud"
-img_src = "https://github.com/matzTada/JapaneseWordcloud/blob/master/resource/picture1.jpg" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
+editMode = "modify" # insert OR append OR modify OR clear (BE SUPER CAREFULL)!!
+title = "Service Drawer"
+img_src = "" #image from youtube "http://img.youtube.com/vi/YOUTUBE_MOVIE_ID_HERE/0.jpg" #image from github "https://raw.githubusercontent.com/matzTada/PROJECT_NAME/BRANCH_NAME/PATH_OF_IMAGE"
 img_alt = ""
-link = "https://github.com/matzTada/JapaneseWordcloud" #github.io page "http://matztada.github.io/"
-sentence = "Simple Japanese Wordcloud with TinySegmenter and amCharts"
-style = "style" #style0 for gray window
+link = "" #github.io page "http://matztada.github.io/"
+sentence = "Drawing route/path on the world map"
+style = "style0" #style0 for gray window
 
 #initialize colorArray
 colorArray = ["style1", "style2", "style3", "style4", "style5", "style6", "style7"] #values in colorArray must suit style in css
