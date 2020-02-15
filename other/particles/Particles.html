@@ -2,6 +2,8 @@
 <head>
   <meta charset="UTF-8">
   <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+  <script src="./libraries/quicksettings.js" type="text/javascript"></script>
+  <script src="./libraries/p5.gui.js" type="text/javascript"></script>
   <style>
     body {padding: 0; margin: 0;} /* to avoid to show scroll bars*/
     canvas {display: block;}  /* to avoid to show scroll bars*/
@@ -18,18 +20,34 @@ document.getElementById('fileaddbutton').addEventListener('change', handleFileSe
 
 
 var pts = [];
-var cellsize = 40;
+var cellsize = 30;
 
 var gazous = [];
 var gazoucnt = 0;
 
 var indmtx;
 
+var coef_separate = 0;
+var coef_align = 0;
+var coef_gravity = 0;
+
+// --- gui start ---
+var gui;
+// --- gui end ---
+
 function setup() {
   // --- p5 js initialize start ---
   var can = createCanvas(windowWidth, windowHeight);
   can.parent("p5canvas");
   // --- p5 js initialize end ---
+
+  // --- GUI setting start ---
+  gui = createGui("MATZPARTICLES");
+  sliderRange(-1, 2, 0.1);
+  gui.addGlobals(
+    "coef_separate","coef_align","coef_gravity"
+  );
+  // --- GUI setting end ---
 
   background(127);
 
@@ -46,7 +64,7 @@ function setup() {
       vx: random(0.5, 2) * (random(0,1) > 0.5 ? 1 : -1),
       vy: random(0.5, 2) * (random(0,1) > 0.5 ? 1 : -1),
       r: random(5, 20),
-      area: 80
+      area: 100
     })
     );
   }
@@ -63,18 +81,22 @@ function draw() {
   indmtx.update(pts);
   indmtx.show();
 
-  for(var tmppt of pts){
-    tmppt.move(indmtx.exmat, cellsize);
-  }
+  pts.forEach((item, i) => { item.boid(pts); });
 
-  for(var tmppt of pts){
-    tmppt.checkNeighbor(pts);
-  }
+  // normalize velocity
+  var maxvalue = Math.max(...pts.map(function(tmp){return createVector(tmp.vx, tmp.vy).mag();}));
+  var minvalue = Math.min(...pts.map(function(tmp){return createVector(tmp.vx, tmp.vy).mag();}));
+  // console.log(nf(maxvalue, null, 1), nf(minvalue, null, 1))
+  var MAX_VEL = 10;
+  var magni = maxvalue / MAX_VEL;
+  pts.forEach((item, i) => {
+    item.vx /= magni;
+    item.vy /= magni;
+  });
 
-  // display particles
-  for(var tmppt of pts){
-    tmppt.show(pts);
-  }
+  pts.forEach((item, i) => { item.move(indmtx.exmat, cellsize); });
+  pts.forEach((item, i) => { item.drawNeighborLine(pts); });
+  pts.forEach((item, i) => { item.show(pts); });
 
   // --- Delaunay traiangle drawing start ---
   getDelaunayTriangle(pts);
@@ -125,7 +147,7 @@ function IndicatorMatrix(_param){
         if(this.exmat[y][x]==1) {
           fill(32, 32, 0);
         }else if(this.exmat[y][x]>=2){
-          fill(map(this.exmat[y][x], minvalue, maxvalue, 0, 255), 0, 0);
+          fill(map(this.exmat[y][x], minvalue, maxvalue, 0, 127), map(this.exmat[y][x], minvalue, maxvalue, 0, 127), 0);
         }else{
           noFill();
         }
@@ -173,33 +195,15 @@ function getDelaunayTriangle(_pts){
   });
 }
 
-function Particle(param){
-  this.x = param.x;
-  this.y = param.y;
-  this.vx = param.vx;
-  this.vy = param.vy;
-  this.r = param.r;
-  this.area = param.area;
+function Particle(_param){
+  this.x = _param.x;
+  this.y = _param.y;
+  this.vx = _param.vx;
+  this.vy = _param.vy;
+  this.r = _param.r;
+  this.area = _param.area;
 
-  this.checkNeighbor = function(_pts){
-    // display neighbor relation
-    stroke(127, 127, 0);
-    _pts.forEach((item, i) => {
-      if(dist(this.x, this.y, item.x, item.y) < this.area){
-        line(this.x, this.y, item.x, item.y);
-      }
-    });
-  }
-
-  this.move = function(_exmat, _cellsize){
-    var nextx = this.x + this.vx;
-    var nexty = this.y + this.vy;
-    // roll back the world if the partcile reaches the edge of space
-    if(nextx < 0) nextx = nextx + width;
-    else if(width <= nextx) nextx = nextx - width;
-    if(nexty < 0) nexty = nexty + height;
-    else if(height <= nexty) nexty = nexty - height;
-
+  this.collisionAvoid = function(){
     // --- check next cell congested? start ---
     // var nextnumx = floor(nextx/_cellsize);
     // var nextnumy = floor(nexty/_cellsize);
@@ -208,6 +212,70 @@ function Particle(param){
     //     console.log("detect: ", this.x, this.y);
     // }
     // --- check next cell congested? end ---
+  }
+
+  this.boid = function(_pts){
+    var neighbors = _pts.filter(item => {
+      return item != this && dist(this.x, this.y, item.x, item.y) < this.area
+    });
+
+    if(neighbors.length <= 0) return;
+
+    var selfpos = createVector(this.x, this.y);
+    var selfvel = createVector(this.vx, this.vy);
+
+    var separate = createVector(0, 0); // rule 1
+    var align = createVector(0, 0); // rule 2
+    var gravity = createVector(0, 0); // rule 3
+    neighbors.forEach((item, i) => {
+      // rule 1 - separation
+      var dif = p5.Vector.sub(selfpos, createVector(item.x, item.y));
+      separate.add(dif.mult(1/dif.mag()));
+
+      // rule 2 - align
+      align.add(createVector(item.vx, item.vy));
+
+      // rule 3 - center gravity
+      gravity.add(createVector(item.x,  item.y));
+    });
+
+    // rule 1
+    separate.mult(1/neighbors.length);
+    separate.normalize();
+
+    // rule 2
+    align.mult(1/neighbors.length);
+    align = p5.Vector.sub(align, selfvel)
+    align.normalize();
+
+    // rule 3
+    gravity.mult(1/neighbors.length);
+    gravity = p5.Vector.sub(gravity, selfpos);
+    gravity.normalize();
+
+    this.vx += 0
+    + coef_separate*separate.x
+    + coef_align*align.x
+    + coef_gravity*gravity.x
+    ;
+
+    this.vy += 0
+    + coef_separate*separate.y
+    + coef_align*align.y
+    + coef_gravity*gravity.y
+    ;
+
+  }
+
+  this.move = function(_exmat, _cellsize){
+    var nextx = this.x + this.vx;
+    var nexty = this.y + this.vy;
+
+    // roll back the world if the partcile reaches the edge of space
+    if(nextx < 0) nextx = nextx + width;
+    else if(width <= nextx) nextx = nextx - width;
+    if(nexty < 0) nexty = nexty + height;
+    else if(height <= nexty) nexty = nexty - height;
 
     // update position
     this.x = nextx;
@@ -217,11 +285,30 @@ function Particle(param){
   this.show = function(_pts){
     stroke(255, 127);
     fill(255, 127);
-    ellipse(this.x, this.y, this.r, this.r);
 
     // show direction
-    stroke(255);
-    line(this.x, this.y, this.x + this.r*this.vx, this.y + this.r*this.vy);
+    var selfvel = createVector(this.vx, this.vy);
+    selfvel.normalize();
+
+    drawTriangle(
+      this.x + 0.5*this.r*selfvel.x,
+      this.y + 0.5*this.r*selfvel.y,
+      this.x + 0.25*this.r*selfvel.copy().rotate(HALF_PI).x - 0.25*this.r*selfvel.x,
+      this.y + 0.25*this.r*selfvel.copy().rotate(HALF_PI).y - 0.25*this.r*selfvel.y,
+      this.x + 0.25*this.r*selfvel.copy().rotate(-HALF_PI).x - 0.25*this.r*selfvel.x,
+      this.y + 0.25*this.r*selfvel.copy().rotate(-HALF_PI).y - 0.25*this.r*selfvel.y
+    );
+
+  }
+
+  this.drawNeighborLine = function(_pts){
+    // display neighbor relation
+    stroke(127, 127, 0);
+    _pts.forEach((item, i) => {
+      if(dist(this.x, this.y, item.x, item.y) < this.area){
+        line(this.x, this.y, item.x, item.y);
+      }
+    });
 
     // // display area
     // stroke(127);
