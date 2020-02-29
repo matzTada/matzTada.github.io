@@ -3,220 +3,258 @@
   <head>
     <meta charset="utf-8">
     <title>Sound Effecter</title>
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.9.0/Sortable.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"/>
+    <style type="text/css">
+      table tr.odd td { /*highligh odd number*/
+        background: #555555;
+      }
+      table td.highlight {
+        background: #FFFF00;
+      }
+    </style>
   </head>
   <body>
-    <!-- buttons will be added by JavaScript -->
-    <div id="listWithHandle" class="list-group">
-    </div>
+    <h1>SoundEffecter</h1>
 
-    <div id="soundsData">
-    </div>
+    <h3>Key-binding Board</h3>
+    <table id="table_key_bind_board" class="table table-bordered" rules="all"></table>
 
-    <!-- <button id="sound_name_btn">modify</button>
-    <audio id="sound_name" preload="auto"><source src="./sounds/self-regulation1.mp3" type="audio/mp3"></audio> -->
+    <h3 id="h3_stop" style="border: solid;">h3_stop sounds</h3>
+
+    <h3>Key-binding Table</h3>
+    <table id="table_key_bind_table" class="table table-bordered" rules="all"></table>
   </body>
-  <style media="screen">
-    html {
-      touch-action: manipulation;
-    }
-    html, body, div {
-      height: 100%;
-    }
-    .list-group-item{
-      width:33.3%;
-      /* height:20%; */
-    }
-    .icon-move{
-      width:10%;
-      /* height:20%; */
-      font-size: 90%;
-      display: inline-block;
-    }
-    .btn-square {
-      width:23%;
-      height:20%;
-      font-size: 90%;
-      display: inline-block;
-      text-decoration: none;
-    }
-    .btn-square:active {
-      -webkit-transform: translateY(4px);
-      transform: translateY(4px);
-    }
-  </style>
 
 <script language="javascript" type="text/javascript">
 console.log("JavsScript called!!")
 
-var page;
-var sort_table;
-var table = [
-"amami-nature1",
-"ambulance-siren1",
-"ambulance-siren2",
-"apple1",
-"beamgun-shot1",
-"beamgun3",
-"bicycle-bell1",
-"blink1",
-"bomb1",
-"bowling-pin1",
-"boyon1",
-"boyoyon1",
-"broadcasting-end1",
-"broadcasting-start1",
-"camera-shutter1",
-"cat-cry1",
-"chicken-cry1",
-"clearing1",
-"cork-plug1",
-"correct1",
-"corvus-corone-cry1",
-"corvus-macrorhynchos-cry1",
-"costume-drama1",
-"dog1",
-"drum-roll1",
-"extend1",
-"eye-shine1",
-"fate2",
-"flash2",
-"fly1",
-"glass-break2",
-"gong-played1",
-"gong-played2",
-"gun-reload1",
-"gun1",
-"heavy-machine-gun1",
-"helicopter-pass2",
-"hyoushigi3",
-"hyun1",
-"incorrect1",
-"katana-clash1",
-"katana-clash4",
-"katana-gesture2",
-"katana-slash5",
-"kick-low1",
-"kick-middle1",
-"kira1",
-"machdash1",
-"machinegun1",
-"machinegun2",
-"magic-cure3",
-"magic-cure4",
-"magic-poison2",
-"magic-reflection1",
-"magic-stick1",
-"mens-hajimei1",
-"mens-yeah1",
-"microwave-tin1",
-"minminzemi-cry1",
-"mobile-phone-vibration1",
-"money-drop1",
-"monorail-bell",
-"monster4",
-"patrol-car1",
-"people_people-performance-cheer1",
-"people_people-performance-ee1",
-"people_people-performance-uwaa1",
-"people_people-studio-kyaa1",
-"people_stadium-buzz1",
-"phone-ringtone1",
-"punch-high1",
-"punch-high2",
-"punch-real-swing1",
-"punch-real1",
-"qigong2",
-"question1",
-"roll-finish1",
-"school-chime1",
-"scream-woman1",
-"self-regulation1",
-"shakin1",
-"shine1",
-"ship-big-whistle2",
-"shot1",
-"shrink1",
-"slap1",
-"stupid6",
-"switch1",
-"sword-clash4",
-"sword-drawn1",
-"sword-gesture1",
-"sword-gesture3",
-"sword-slash1",
-"tin1",
-"train-horn2",
-"trumpet1",
-"trumpet2",
-"warning2",
-"whip-attack-2",
-"wind1",
-"zipper1",
-]
+var key_sound_dict = {
+  "1" : { name : "question1", simplename : "クイズ", memo : "デデン　ここで問題です" },
+  "2" : { name : "correct1", simplename : "〇", memo : "〇正解！ピポピポピポーン" },
+  "3" : { name : "incorrect1", simplename : "×", memo : "×不正解！ブッブー" },
 
-function getTable() {
-  $.cookie.json = true;
-  page = $.cookie('page.page01');
+  "4" : { name : "cat-cry1", simplename : "🐈ねこ", memo : "にゃー　猫" },
+  "5" : { name : "dog1", simplename : "🐕いぬ", memo : "わんわん　犬" },
 
-  var sort_table;
-  if(page !== undefined) {
-    sort_table = page;
-  } else {
-    sort_table = table;
-  }
+  "6" : { name : "tin1", simplename : "🛎ベル", memo : "チーン" },
 
-  return sort_table;
-}
+  "7" : { name : "self-regulation1", simplename : "規制", memo : "ピー　自主規制" },
 
-function createHtml(_name) {
-  var returnStr = ""
-    + '<span class="wrap list-group-item" data-name="' + _name + '">'
-      + '<span class="icon-move" aria-hidden="true">'
-        + '#'
-      + '</span>'
-      + "<button class=\"btn-square\" id=\"" + _name + "_btn\">"
-        + _name.substr(0, 5) + "" + _name.substr(-5, _name.length-1)
-      + "</button>"
-    + '</span>';
-  return returnStr;
+  "8" : { name : "bicycle-bell1", simplename : "🚲ﾁｬﾘ", memo : "チリンチリン　自転車" },
+
+  "9" : { name : "camera-shutter1", simplename : "📷ｶﾒﾗ", memo : "カシャカシャ　カメラシャッター音" },
+
+  "0" : { name : "clearing1", simplename : "💲レジ", memo : "ちゃきーん　レジの音" },
+
+  "q" : { name : "drum-roll1", simplename : "🥁ﾛｰﾙ", memo : "ドラムロール" },
+  "w" : { name : "costume-drama1", simplename : "カァァ", memo : "カァァ　ビブラスラップ" },
+  "e" : { name : "trumpet1", simplename : "🎺", memo : "テレテテッテテー　トランペット" },
+
+  "r" : { name : "extend1", simplename : "⇧上へ", memo : "ふーわん　場面切り替え" },
+  "t" : { name : "shrink1", simplename : "⇩下へ", memo : "ヒュオーン　ものが落ちる音"},
+  "y" : { name : "boyon1", simplename : "ボヨン", memo : "ボヨン　バランスボールではじかれる感じ" },
+  "u" : { name : "boyoyon1", simplename : "ﾋﾞﾖﾖｰﾝ", memo : "ビヨヨーン　伸びる感じの音" },
+
+  "a" : { name : "eye-shine1", simplename : "<ｷｭﾋﾟｰﾝ", memo : "キュピーン！　目が光る感じ" },
+  "s" : { name : "kira1", simplename : "✨ｷﾗﾘﾝ", memo : "キラキラリーン" },
+  "d" : { name : "magic-cure4", simplename : "☀降臨", memo : "ファーン　神聖な感じ" },
+  "f" : { name : "magic-stick1", simplename : "☤魔法", memo : "魔法の杖" },
+
+  "g" : { name : "stupid6", simplename : "ﾎﾜﾝ^3", memo : "ほわんほわんほわん　ボケ" },
+  "h" : { name : "fate2", simplename : "運命", memo : "ちゃららーんちゃららららーらーん　運命" },
+
+  "j" : { name : "punch-high1", simplename : "👊", memo : "ドゥクシ　パンチ" },
+  "k" : { name : "kick-low1", simplename : "👣", memo : "バシッ　キック" },
+
+  "z" : { name : "mens-yeah1", simplename : "ｲｴｰｲ!", memo : "イェーッ！" },
+  "x" : { name : "people_people-performance-cheer1", simplename : "ｷｬｰ!", memo : "ヒューパチパチ　拍手" },
+
+  "c" : { name : "glass-break2", simplename : "ｶﾞﾗｽ割", memo : "ガラスが割れる音"},
+
+  "v" : { name : "phone-ringtone1", simplename : "☎", memo : "着信音"},
+
+
+  // "" : { name : "shakin1", simplename : "sn", memo : "memo" },
+  // "" : { name : "gun1", simplename : "sn", memo : "memo" },
+  // "" : { name : "beamgun3", simplename : "sn", memo : "memo" },
+  // "" : { name : "bomb1", simplename : "sn", memo : "memo" },
+
+  // "" : { name : "amami-nature1", simplename : "sn", memo : "memo"},
+  // "" : { name : "ambulance-siren1", simplename : "sn", memo : "memo"},
+  // "" : { name : "ambulance-siren2", simplename : "sn", memo : "memo"},
+  // "" : { name : "apple1", simplename : "sn", memo : "memo"},
+  // "" : { name : "beamgun-shot1", simplename : "sn", memo : "memo"},
+  // "" : { name : "blink1", simplename : "sn", memo : "memo"},
+  // "" : { name : "bowling-pin1", simplename : "sn", memo : "memo"},
+  // "" : { name : "broadcasting-end1", simplename : "sn", memo : "memo"},
+  // "" : { name : "broadcasting-start1", simplename : "sn", memo : "memo"},
+  // "" : { name : "chicken-cry1", simplename : "sn", memo : "memo"},
+  // "" : { name : "cork-plug1", simplename : "sn", memo : "memo"},
+  // "" : { name : "corvus-corone-cry1", simplename : "sn", memo : "memo"},
+  // "" : { name : "corvus-macrorhynchos-cry1", simplename : "sn", memo : "memo"},
+  // "" : { name : "flash2", simplename : "sn", memo : "memo"},
+  // "" : { name : "fly1", simplename : "sn", memo : "memo"},
+  // "" : { name : "gong-played1", simplename : "sn", memo : "カン！　試合開始"},
+  // "" : { name : "gong-played2", simplename : "sn", memo : "カンカンカン！　試合終了"},
+  // "" : { name : "gun-reload1", simplename : "sn", memo : "memo"},
+  // "" : { name : "heavy-machine-gun1", simplename : "sn", memo : "memo"},
+  // "" : { name : "helicopter-pass2", simplename : "sn", memo : "memo"},
+  // "" : { name : "hyoushigi3", simplename : "sn", memo : "拍子木"},
+  // "" : { name : "hyun1", simplename : "sn", memo : "memo"},
+  // "" : { name : "katana-clash1", simplename : "sn", memo : "memo"},
+  // "" : { name : "katana-clash4", simplename : "sn", memo : "memo"},
+  // "" : { name : "katana-gesture2", simplename : "sn", memo : "memo"},
+  // "" : { name : "katana-slash5", simplename : "sn", memo : "memo"},
+  // "" : { name : "kick-middle1", simplename : "sn", memo : "memo"},
+  // "" : { name : "machdash1", simplename : "sn", memo : "ヒューン　F1"},
+  // "" : { name : "machinegun1", simplename : "sn", memo : "memo"},
+  // "" : { name : "machinegun2", simplename : "sn", memo : "memo"},
+  // "" : { name : "magic-cure3", simplename : "sn", memo : "memo"},
+  // "" : { name : "magic-poison2", simplename : "sn", memo : "memo"},
+  // "" : { name : "magic-reflection1", simplename : "sn", memo : "memo"},
+  // "" : { name : "mens-hajimei1", simplename : "sn", memo : "memo"},
+  // "" : { name : "microwave-tin1", simplename : "sn", memo : "memo"},
+  // "" : { name : "minminzemi-cry1", simplename : "sn", memo : "memo"},
+  // "" : { name : "mobile-phone-vibration1", simplename : "sn", memo : "memo"},
+  // "" : { name : "money-drop1", simplename : "sn", memo : "memo"},
+  // "" : { name : "monorail-bell", simplename : "sn", memo : "memo"},
+  // "" : { name : "monster4", simplename : "sn", memo : "memo"},
+  // "" : { name : "patrol-car1", simplename : "sn", memo : "memo"},
+  // "" : { name : "people_people-performance-ee1", simplename : "sn", memo : "memo"},
+  // "" : { name : "people_people-performance-uwaa1", simplename : "sn", memo : "memo"},
+  // "" : { name : "people_people-studio-kyaa1", simplename : "sn", memo : "memo"},
+  // "" : { name : "people_stadium-buzz1", simplename : "sn", memo : "memo"},
+  // "" : { name : "punch-high2", simplename : "sn", memo : "memo"},
+  // "" : { name : "punch-real-swing1", simplename : "sn", memo : "memo"},
+  // "" : { name : "punch-real1", simplename : "sn", memo : "memo"},
+  // "" : { name : "qigong2", simplename : "sn", memo : "memo"},
+  // "" : { name : "roll-finish1", simplename : "sn", memo : "memo"},
+  // "" : { name : "school-chime1", simplename : "sn", memo : "memo"},
+  // "" : { name : "scream-woman1", simplename : "sn", memo : "memo"},
+  // "" : { name : "shakin1", simplename : "sn", memo : "memo"},
+  // "" : { name : "shine1", simplename : "sn", memo : "memo"},
+  // "" : { name : "ship-big-whistle2", simplename : "sn", memo : "memo"},
+  // "" : { name : "shot1", simplename : "sn", memo : "memo"},
+  // "" : { name : "slap1", simplename : "sn", memo : "memo"},
+  // "" : { name : "switch1", simplename : "sn", memo : "memo"},
+  // "" : { name : "sword-clash4", simplename : "sn", memo : "memo"},
+  // "" : { name : "sword-drawn1", simplename : "sn", memo : "memo"},
+  // "" : { name : "sword-gesture1", simplename : "sn", memo : "memo"},
+  // "" : { name : "sword-gesture3", simplename : "sn", memo : "memo"},
+  // "" : { name : "sword-slash1", simplename : "sn", memo : "memo"},
+  // "" : { name : "train-horn2", simplename : "sn", memo : "memo"},
+  // "" : { name : "trumpet2", simplename : "sn", memo : "memo"},
+  // "" : { name : "warning2", simplename : "sn", memo : "memo"},
+  // "" : { name : "whip-attack-2", simplename : "sn", memo : "memo"},
+  // "" : { name : "wind1", simplename : "sn", memo : "memo"},
+  // "" : { name : "zipper1", simplename : "sn", memo : "memo"},
 }
 
 // initialize
+$(function(){
 
-sort_table = getTable();
+  $("body").css('font-size', '3em');
+  $("body").css('color', 'white');
+  $("body").css('background-color', 'black');
 
-for (i = 0; i < sort_table.length; i++) {
-  $('#listWithHandle').append(createHtml(sort_table[i]));
-  $("#soundsData").append("<audio id=\"" + sort_table[i] + "_sound\" preload=\"auto\"><source src=\"./sounds/" + sort_table[i] + ".mp3\" type=\"audio/mp3\"></audio>");
-}
+  // === create  key bind table header
+  var keyboard_sequence_array = [
+    ["1","2","3","4","5","6","7","8","9","0"],
+    ["q","w","e","r","t","y","u","i","o","p"],
+    ["a","s","d","f","g","h","j","k","l"],
+    ["z","x","c","v","b","n","m"]
+  ]
 
-Sortable.create(listWithHandle, {
-  handle: '.icon-move',
-  animation: 150,
-  onUpdate: function (e) {
-    var box = [];
-    $('.wrap').each(function(index, element){
-      box.push($(element).data('name'));
+  keyboard_sequence_array.forEach((line) => {
+    var adding_str = "";
+
+    adding_str += "<tr>";
+
+    line.forEach((key) => {
+      adding_str += ""
+        + "<td id=\""
+        + key
+        + "\">"
+        + key
+        + "<br />";
+      adding_str += (key_sound_dict[key]) ? key_sound_dict[key].simplename : "(nul)"
+      adding_str += "</td>";
     });
-    $.cookie('page.page01', box);
-  },
-});
 
-function regisBtn(_name){
-  var se = $("#"+ _name +"_sound");
-  $("#" + _name +"_btn").on("click", function(){
-    se[0].currentTime = 0;
-    se[0].play();
+    adding_str += "</tr>";
+
+    $("#table_key_bind_board").append(adding_str);
   });
-}
 
-for (i = 0; i < sort_table.length; i++) {
-  regisBtn(sort_table[i]);
-}
+  // === create  key bind table header
+  $("#table_key_bind_table").append(
+  "<tr>"
+  + "<th>" + "key" +  "</th>"
+  + "<th>" + "name" +  "</th>"
+  + "<th>" + "memo" +  "</th>"
+  + "</tr>");
+  Object.keys(key_sound_dict).forEach((key) => {
+    $("#table_key_bind_table").append(
+      "<tr>"
+      + "<td>" + key +  "</td>"
+      + "<td>" + key_sound_dict[key].name +  "</td>"
+      + "<td>" + key_sound_dict[key].memo +  "</td>"
+      + "</tr>");
+  });
+  $('#table_key_bind_table tr:odd').addClass('odd');
 
+  // === initialize sounds
+  Object.keys(key_sound_dict).forEach((key) => {
+    key_sound_dict[key].sound = new Audio();
+    tmpmusic = key_sound_dict[key].sound;
+    tmpmusic.preload = "auto";
+    tmpmusic.src = "./sounds/" + key_sound_dict[key].name + ".mp3";
+    tmpmusic.load();
+
+    $('#' + key).on('click', function(event) {
+      console.log("clicked : ", key)
+      soundDisplayByKey(key);
+    });
+
+  });
+
+  $('#h3_stop').on('click', function(event) {
+    soundDisplayByKey("");
+  });
+
+
+  // === set keyboard function
+  $("html").on("keypress", function(e) {
+    var key = e.key;
+    console.log("keypress called : ", key);
+    soundDisplayByKey(key);
+  });
+
+  function soundDisplayByKey(_key){
+    if(key_sound_dict[_key]){
+      $('#'+_key).addClass('highlight');
+
+      var tmpmusic = key_sound_dict[_key].sound;
+      tmpmusic.currentTime = 0;
+      tmpmusic.play();
+
+      tmpmusic.addEventListener("ended", function () {
+        $('#'+_key).removeClass('highlight');
+      }, false);
+
+    }else{
+      Object.keys(key_sound_dict).forEach((key) => {
+        key_sound_dict[key].sound.pause();
+        $('#'+key).removeClass('highlight');
+      });
+    }
+  }
+
+
+});
 
 </script>
 </html>
